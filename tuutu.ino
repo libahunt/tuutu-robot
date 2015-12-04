@@ -13,7 +13,8 @@ NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and
 #define GAP 1
 #define PRELOOPCROSSING 2
 #define LOOPCROSSING 3
-#define OBSTACLE 4
+#define AFTERLOOPCROSSING 4
+#define OBSTACLE 5
 byte mode = NORMAL;
 
 #define LEFT 0
@@ -221,7 +222,76 @@ void loop() {
   }
   
   else if (mode == PRELOOPCROSSING) {
-    stop();
+    if (noOfLines == 1) {
+      mode = LOOPCROSSING;
+    }
+    goStraight();
+  }
+  
+  else if (mode == LOOPCROSSING) {
+    if (noOfLines > 1) {
+      if (loopDirection == LEFT) {//need to choose left direction
+        if (hasLine[0] || hasLine[1]) { //some turn needed
+          turnLeft();
+        }
+        else {
+           goStraight();
+        }
+      }
+      else {//need to choose right direction
+        if (hasLine[3] || hasLine[4]) { //some turn needed
+          turnRight();
+        }
+        else {
+          goStraight();
+        }
+      }
+      mode = AFTERLOOPCROSSING;
+    }
+    else {//second line is not visible yet, follow the track
+      if (hasLine[1] || hasLine[0]) {
+        turnLeft();
+      }
+      else if (hasLine[3] || hasLine[4]) {
+        turnRight();
+      }
+      else {//center sensor has line
+        goStraight();  
+      }
+    }
+  }
+  
+  else if (mode == AFTERLOOPCROSSING) {
+    if (noOfLines > 1) {
+      if (loopDirection == LEFT) {//need to choose left direction
+        if (hasLine[0] || hasLine[1]) { //some turn needed
+          turnLeft();
+        }
+        else {
+           goStraight();
+        }
+      }
+      else {//need to choose right direction
+        if (hasLine[3] || hasLine[4]) { //some turn needed
+          turnRight();
+        }
+        else {
+          goStraight();
+        }
+      }
+    }
+    else {//second line is not visible any more
+      mode = NORMAL;
+      if (hasLine[1] || hasLine[0]) {
+        turnLeft();
+      }
+      else if (hasLine[3] || hasLine[4]) {
+        turnRight();
+      }
+      else {//center sensor has line
+        goStraight();  
+      }
+    }
   }
   
   /*save line existence states*/
