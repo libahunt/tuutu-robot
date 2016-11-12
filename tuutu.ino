@@ -1,6 +1,11 @@
 /***
 Linefollower robot operation script
 ***/
+
+//#define DEBUG /*comment this line out in production then all DP Serial instructsions are ignored*/
+#include "DebugUtils.h"/*leave this in, otherwise you get errors*/
+
+
 #include <NewPing.h>
 
 #define TRIGGER_PIN  2  // Arduino pin tied to trigger pin on the ultrasonic sensor.
@@ -21,7 +26,7 @@ byte mode = NORMAL;
 #define RIGHT 1
 byte loopDirection;
 
-/*LAyout - physical connections*/
+/*Layout - physical connections*/
 const int motorLeftFw = 10;
 const int motorLeftRv = 9;
 const int motorRightFw = 6;
@@ -34,6 +39,7 @@ int sensorReadings[5]; //left to right
 boolean hasLine[5]; //left to right
 const int saveSize = 50;
 boolean hasLinePrev[5][saveSize];//lenght of array should cover about 10cm of previous track
+boolean hadBlack[5];
 byte noOfLines;
 byte noOfLinesPrev[saveSize];
 int saveCounter = 0;
@@ -54,14 +60,15 @@ int hasLineThres = 60;//analogread value that indicates line under the sensor
 int readingInterval = 20; //after which time to read line sensors, in milliseconds
 //ideal would be around 5 readings per 1 cm of movement
 
-int speedPWM = 125; //PWM speed for driving straight and for the outer wheel on turns
+int speedPWM = 255; //PWM speed for driving straight and for the outer wheel on turns
+int hardTurnPWM = speedPWM * 0.75;
 
 /*obstacle maneuver timing settings - millisecond duration for each phase*/
 unsigned long obstaclePhase1 = 800; //turn to leave line
-unsigned long obstaclePhase2 = 2000; //move away from line
-unsigned long obstaclePhase3 = 800; //turn parallel to line
-unsigned long obstaclePhase4 = 2000; //move parallel to line
-unsigned long obstaclePhase5 = 500; //turn back towards the line
+unsigned long obstaclePhase2 = 1300; //move away from line
+unsigned long obstaclePhase3 = 700; //turn parallel to line
+unsigned long obstaclePhase4 = 1100; //move parallel to line
+unsigned long obstaclePhase5 = 700; //turn back towards the line
 
 int obstacleDistance = 20; //at which distance measurement to decide that this is obstacle, time to turn, cm
 
@@ -86,7 +93,9 @@ void setup() {
   pinMode(sensorPins[3], INPUT);
   pinMode(sensorPins[4], INPUT); 
   
-  Serial.begin(9600);
+  #ifdef DEBUG
+    Serial.begin(9600);
+  #endif
  
   delay(3000);
    
@@ -100,14 +109,15 @@ void loop() {
   
   /*** PING reads object ahead ***/
   
-  if (mode == NORMAL && frontDist < obstacleDistance && frontDist > 1) {
+  if (frontDist < obstacleDistance && frontDist > 10) {
+    //stopMotors();
     mode = OBSTACLE;
-    obstacleStart = millis();
-    turnRight();
+    //obstacleStart = millis();
   }
  
-  else if (mode == OBSTACLE) {   
-    //pass by obstacle maneuver
+  if (mode == OBSTACLE) {
+    digitalWrite(13, 0);   
+    /*pass by obstacle maneuver
     while (obstacleStart + obstaclePhase1 < millis()) {
       turnRight();
     }
@@ -127,6 +137,17 @@ void loop() {
     while (obstacleStart + obstaclePhase5 < millis()) {
       turnLeft();
     }
+    */
+    turnRightHard();
+    delay(obstaclePhase1);
+    goStraight();
+    delay(obstaclePhase2);
+    turnLeftHard();
+    delay(obstaclePhase3);
+    goStraight();
+    delay(obstaclePhase4);
+    turnLeftHard();
+    delay(obstaclePhase5);
     mode = GAP; //in gap mode goes straight until finding line again
   }
   
@@ -134,25 +155,28 @@ void loop() {
   /*** Outermost sensors read black ***/
   
   else if (mode == NORMAL && hasLine[0] && hasLine[4]) {//both black
+  digitalWrite(13, 0);
     goStraight();//assume start-finish markings, ignore
   }
   
   else if (mode == NORMAL && hasLine[0]) {
+    digitalWrite(13, 0);
     if (!hasLine[1] && (hasLine[2] || hasLine[3]) ) {//black-white-black situation
       mode = PRELOOPCROSSING;//assume loop
       loopDirection = LEFT;
     }
     else {//assume big offset or sharp turn
-      turnLeft();
+      turnLeftHard();
     }
   }
   else if (mode == NORMAL && hasLine[4]) {
+    digitalWrite(13, 0);
     if (!hasLine[3] && (hasLine[2] || hasLine[1]) ) {//black-white-black situation
       mode = PRELOOPCROSSING;//assume loop
       loopDirection = RIGHT;
     }
     else {//assume big offset or sharp turn
-      turnRight(); 
+      turnRightHard(); 
     }    
   }
   
@@ -160,6 +184,7 @@ void loop() {
   /*** One line detected ***/
   
   else if (mode == NORMAL && noOfLines == 1) {
+    digitalWrite(13, 0);
     if (hasLine[1]) {
       turnLeft();
     }
@@ -174,8 +199,18 @@ void loop() {
   /*** No line detected ***/
   
   else if (mode == NORMAL && noOfLines == 0) {
+    digitalWrite(13, 0);
+    if (hadBlack[0]) {
+      turnLeftHard();
+    }
+    else if (hadBlack[4]) {
+      turnRightHard();
+    }
+    else {
+      goStraight();
+    }
     //analyze previous ~1cm measurements
-    int hasLineStats = 0;
+    /*int hasLineStats = 0;
     for (i=0; i<saveSize/10; i++) {
       int savePosition;
       if (saveCounter - i >= 0) {
@@ -194,7 +229,8 @@ void loop() {
     }
     else {//just go straight and postpone decisions ...
       goStraight();  
-    }
+    }*/
+    
   }
 
   
@@ -202,11 +238,17 @@ void loop() {
     
     mode = NORMAL;
     if (noOfLines > 0 && noOfLines >=2) {
-      if (hasLine[0] || hasLine[1]) {
-        turnLeft();
+      if (hasLine[0]) {
+        turnLeftHard();
       }
-      else if (hasLine[3] || hasLine[4]) {
+      else if (hasLine[1]) {
+        turnLeft(); 
+      }
+      else if (hasLine[3]) {
         turnRight();
+      }
+      else if (hasLine[4]) {
+        turnRightHard(); 
       }
       else {//center sensor has line
         goStraight();  
@@ -218,6 +260,7 @@ void loop() {
   }
   
   else if (mode == GAP) {//no lines
+    digitalWrite(13, 0);
     goStraight();
   }
   
@@ -226,6 +269,7 @@ void loop() {
       mode = LOOPCROSSING;
     }
     goStraight();
+    digitalWrite(13, 1);
   }
   
   else if (mode == LOOPCROSSING) {
@@ -247,6 +291,7 @@ void loop() {
         }
       }
       mode = AFTERLOOPCROSSING;
+      
     }
     else {//second line is not visible yet, follow the track
       if (hasLine[1] || hasLine[0]) {
@@ -259,6 +304,7 @@ void loop() {
         goStraight();  
       }
     }
+    digitalWrite(13, 0);
   }
   
   else if (mode == AFTERLOOPCROSSING) {
@@ -266,6 +312,7 @@ void loop() {
       if (loopDirection == LEFT) {//need to choose left direction
         if (hasLine[0] || hasLine[1]) { //some turn needed
           turnLeft();
+          delay(300);
         }
         else {
            goStraight();
@@ -274,6 +321,7 @@ void loop() {
       else {//need to choose right direction
         if (hasLine[3] || hasLine[4]) { //some turn needed
           turnRight();
+          delay(300);
         }
         else {
           goStraight();
@@ -292,11 +340,15 @@ void loop() {
         goStraight();  
       }
     }
+    digitalWrite(13, 1);
   }
   
   /*save line existence states*/
   for (i=0; i<5; i++) {
     hasLinePrev[i][saveCounter] = hasLine[i];
+    if (noOfLines>0) {//save onöy if line was detected
+      hadBlack[i] = hasLine[i]; 
+    }
     noOfLinesPrev[saveCounter] = noOfLines;
   }
   saveCounter++;
@@ -305,26 +357,37 @@ void loop() {
   } 
    
      
-  ledState = !ledState;
-  digitalWrite(13, ledState);
   
   
-  if (debugCounter == 10) {
-    float lines[5] = {0, 0, 0, 0, 0};
-    for (i=0; i<10;i++) {
-      for (j=0; j<5; j++) {
-        lines[j] += int(hasLinePrev[saveCounter-i]); 
-      }
+  
+  //if (debugCounter == 10) {
+  
+    for (j=0; j<5; j++) {
+      DP(hasLine[j]);
+      DP(" "); 
     }
-    for (j=0; j<10; j++) {
-      lines[j] = lines[j]/10.0;
-      Serial.print(lines[j]);
-      Serial.print(" ");
+    if (mode == NORMAL) {
+      DP("NORMAL");
     }
-    Serial.print(mode);
-    Serial.println();
-    debugCounter=0; 
-  }
+    else if (mode == GAP) {
+      DP("GAP"); 
+    }
+    else if (mode == PRELOOPCROSSING) {
+      DP("PRELOOP");
+    }
+    else if (mode == LOOPCROSSING) {
+      DP("LOOP");
+    }
+    else if (mode == AFTERLOOPCROSSING) {
+      DP("AFTERLOOP");
+    }
+    else if(mode == OBSTACLE) {
+      DP("OBSTACLE");
+    }  
+    
+    DPL(" ");
+    
+  //}
   debugCounter++;
   
   delay(readingInterval);
@@ -375,7 +438,21 @@ void turnRight() {
   analogWrite(motorLeftRv, 0);
 }
 
-void stop() {
+void turnLeftHard() {
+  analogWrite(motorRightFw, speedPWM);
+  analogWrite(motorRightRv, 0);
+  analogWrite(motorLeftFw, 0);
+  analogWrite(motorLeftRv, hardTurnPWM);
+}
+
+void turnRightHard() {
+  analogWrite(motorRightFw, 0);
+  analogWrite(motorRightRv, hardTurnPWM);
+  analogWrite(motorLeftFw, speedPWM);
+  analogWrite(motorLeftRv, 0);
+}
+
+void stopMotors() {
   analogWrite(motorRightFw, 0);
   analogWrite(motorRightRv, 0);
   analogWrite(motorLeftFw, 0);
