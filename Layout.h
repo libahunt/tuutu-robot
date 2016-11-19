@@ -18,7 +18,7 @@ const int motorLeftRv = 4;
 const int motorRightFw = 3;
 const int motorRightRv = 2;
 
-const int sensorPins[] = {A7, A6, A5, A4, A3, A2, A1, A0, A8}; //left to right
+const int sensorPins[] = {A7, A6, A5, A4, A3, A8, A0, A1, A2}; //left to right
 
 const int towerPosPot = A9;
 
