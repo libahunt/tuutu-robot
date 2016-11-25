@@ -1,7 +1,12 @@
 
 void signalLights(unsigned long color) {
-  for(i=0; i<8; i++) {
-      turnSignals.setPixelColor(i, color);
+  for(i=0; i<9; i++) {
+      if (hasBlack[i]) {
+        turnSignals.setPixelColor(i, color);
+      }
+      else {
+        turnSignals.setPixelColor(i, colorOff);
+      }
     }
     turnSignals.show();
 }

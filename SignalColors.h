@@ -9,6 +9,10 @@
  * FLYING red
  * ALLBLACK green
 */
+
+unsigned long c = turnSignals.Color(0, 0, 0); //Special type for storing NeoPixel color. This variable can be 
+                                              // declared only after creating neopixel object
+                                              
 unsigned long colorNormal = turnSignals.Color(0, 0, 255);   //blue
 unsigned long colorGap = turnSignals.Color(90, 90, 90);      //white
 unsigned long colorPreloop = turnSignals.Color(200, 55, 0);  //orange
@@ -18,3 +22,4 @@ unsigned long colorObstacle = turnSignals.Color(127, 127, 0); //yellow
 unsigned long colorFlying = turnSignals.Color(255, 0, 0);   //red
 unsigned long colorAllblack = turnSignals.Color(0, 255, 0); //green
 
+unsigned long colorOff = turnSignals.Color(0, 0, 0);

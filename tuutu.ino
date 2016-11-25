@@ -3,6 +3,16 @@ Linefollowing with obstacles robot operation script.
 Arduino MEGA controller.
 ***/
 
+/**
+ * TODO
+ * remove extra hasBlack slots, one for each sensor is enough
+ * remove hasGray - too hard to detect and irrelevant
+ * make preloop detect and save the direction where the new line comes in.
+ * maybe analyze hasBlack into 1, 2, 3 separate lines every time? hasgap logic ...
+ * make preloop and/or loop get dropped after some reasonable timeout
+ * make indicator light strips show color even when no line exists (gap mode)
+ */
+
 #define DEBUG /*comment this line out in production then all DP Serial instructsions are ignored*/
 #include "DebugUtils.h"/*leave this in, otherwise you get errors*/
 
@@ -20,10 +30,7 @@ NewPing obstacleSonar(TRIGGER_PIN_OBS, ECHO_PIN_OBS, MAX_DISTANCE_OBS);
 NewPing edgeSonar(TRIGGER_PIN_EDGE, ECHO_PIN_EDGE, MAX_DISTANCE_EDGE);
 
 /*** Neopixels are used as fancy "turn signal" lights that give information about the program state. ***/
-Adafruit_NeoPixel turnSignals = Adafruit_NeoPixel(4, PIXELPIN, NEO_GRB + NEO_KHZ800);
-
-unsigned long c = turnSignals.Color(0, 0, 0); //Special type for storing NeoPixel color. This variable can be 
-                                              // declared only after creating neopixel object
+Adafruit_NeoPixel turnSignals = Adafruit_NeoPixel(10, PIXELPIN, NEO_GRB + NEO_KHZ800);
 #include "SignalColors.h"
 
 
@@ -58,9 +65,13 @@ void setup() {
  
   delay(3000);
 
+  turnSignals.begin();
+  turnSignals.show();
+
   mode = NORMAL;
   moveDirection = STRAIGHT;
 
+  
   
 } // /setup
 
@@ -81,21 +92,16 @@ void loop() {
   }
   
   
-  //if (debugCounter == 10) {
+  if (debugCounter == 25) {
   
     for (j=0; j<9; j++) {
       DP(sensorReadings[j]);
       DP(" "); 
     }
-    DP("   ");
-    DP(runMotors);
-    //DP(digitalRead(18));
-    DPL(" ");
-    /*for (j=0; j<17; j++) {
+    for (j=0; j<17; j++) {
       DP(hasLine[j]);
-      DP(" "); 
     }
-    DPL(" ");
+    DP(" ");
 
     DP("Front: ");
     DP(frontDist);
@@ -129,13 +135,13 @@ void loop() {
       DP("ALLBLACK");
     }  
     
-    DPL(" ");*/
+    DPL(" ");
+    debugCounter = 0;
     
-  //}
-  //debugCounter++;
+  }
+  debugCounter++;
   
-  //delay(readingInterval);
-  delay(500);
+  delay(readingInterval);
   
 } // /loop
 

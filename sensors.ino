@@ -69,13 +69,17 @@ void readSensors() {
   /*Get reading from floor distance - mountain top sensor.*/
   floorDist = edgeSonar.ping_cm();
 
+  /**
+   * Calculate which way to move to keep on the line(s) that were detected.
+   * In some modes this decision will be overridden.
+   */
   int leftFifth = int(hasLine[0]) + int(hasLine[1]) + int(hasLine[2]);
   int leftCenterFifth = int(hasLine[3]) + int(hasLine[4]) + int(hasLine[5]) + int(hasLine[6]);
   int centerFifth = int(hasLine[7]) + int(hasLine[8]) + int(hasLine[9]);
   int rightCenterFifth = int(hasLine[13]) + int(hasLine[12]) + int(hasLine[11] + int(hasLine[10]));
   int rightFifth = int(hasLine[16]) + int(hasLine[15]) + int(hasLine[14]);
 
-  if ((leftFifth + leftCenterFifth) == (rightFifth + rightCenterFifth)) {
+  if ((leftFifth + leftCenterFifth) > (rightFifth + rightCenterFifth)) {
      if (leftFifth > leftCenterFifth) {
       moveDirection = HARDLEFT;
     }
@@ -83,8 +87,16 @@ void readSensors() {
       moveDirection = SMOOTHLEFT;
     }
   }
-  else if ((leftFifth + leftCenterFifth) > (rightFifth + rightCenterFifth)) {
-    moveDirection = STRAIGHT;
+  else if ((leftFifth + leftCenterFifth) == (rightFifth + rightCenterFifth)) {
+    if (leftFifth > rightFifth) {
+      moveDirection = SMOOTHLEFT;
+    }
+    else if (rightFifth > leftFifth) {
+      moveDirection = SMOOTHRIGHT;
+    }
+    else {
+      moveDirection = STRAIGHT;
+    }
   }
   else if ((leftFifth + leftCenterFifth) < (rightFifth + rightCenterFifth)) {
     if (rightFifth > rightCenterFifth) {

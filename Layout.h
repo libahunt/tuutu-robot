@@ -1,7 +1,7 @@
 /*** Layout - physical connections ***/
 
 /*** Neopixels are used as fancy "turn signal" lights that give information about the program state. ***/
-#define PIXELPIN 8 //NeoPixels control wire.
+#define PIXELPIN 7 //NeoPixels control wire.
 
 /*** One Ultrasonic distance sensor detects the block shaped obstacle on the track. ***/
 #define TRIGGER_PIN_OBS  2
