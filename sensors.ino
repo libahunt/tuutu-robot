@@ -2,64 +2,34 @@
 void readSensors() {
   /**
    * Most usable global variables that will hold results after mesurement are:
-   * hasLine[17] (bool)
+   * sensorReadings[9] (int)
+   * hasLine[9] (bool)
    * noOfLines (int)
-   * doubleLine (bool)
    * frontDist (int)
    * floorDist (float)
    */
   
 
-  /*Get readings from sensors and save as black or gray decisions.*/
+  /*Get readings from sensors save them and also save as "has line" boolean. 
+  Count lines - black areas separated by white.*/
+  noOfLines = 0;
   for (i=0; i<9; i++) {
     sensorReadings[i] = analogRead(sensorPins[i]); 
     if (sensorReadings[i] > hasBlackThres) {
-      hasBlack[i] = true;
-      hasGray[i] = true;
-    }
-    else if (sensorReadings[i] > hasGrayThres) {
-      hasGray[i] = true;
-      hasBlack[i] = false;
-    }
-    else {
-      hasBlack[i] = false;
-      hasGray[i] = false;
-    }
-  
-    delay(1);
-  }
-
-  /*Put probable line positions into an array and count lines.*/
-  noOfLines = 0;
-  for (i=0; i<9; i++) {
-    if (hasBlack[i]) {
-      hasLine[i*2] = true;
-      noOfLines++;
-    }
-    else if (i<8 && hasGray[i] && hasGray[i+1]) {
-      hasLine[i*2 + 1] = true;
-      noOfLines++;
-    }
-    else if (i==8) {
-      hasLine[i*2] = false;
-    }
-    else {
-      hasLine[i*2] = false;
-      hasLine[i*2 + 1] = false;
-    }
-  }
-
-  /*When multiple lines, check if they are separated by white area*/
-  if (noOfLines >=2) {
-    int noOfGaps = -1;
-    for (i=0; i<16; i++) {
-      if (!hasLine[i] && hasLine[i+1]) {
-        noOfGaps++;
+      hasLine[i] = true;
+      if (i==0) {
+        noOfLines++;//if first sensor is black it it first separate line
+      }
+      else {
+        if (!hasLine[i-1]) {//if previous sensor was white
+          noOfLines++;//this counts as new separate line
+        }
       }
     }
-    if (noOfGaps == 1) {
-      doubleLine = true;
+    else {
+      hasLine[i] = false;
     }
+    delay(1);//delay for more stable analog readings
   }
   
 

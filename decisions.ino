@@ -3,12 +3,15 @@ int decide() {
 
   if (mode == NORMAL) { //most of the decisions happen when current mode is normal
     
+    signalLights(colorNormal);
+    
     if (floorDist > floorOKThres) {
-      
       mode = FLYING;
-      moveDirection = STRAIGHT;//Override move direction from line sensors.
-      signalLights(colorFlying);
-      
+    }
+
+    else if (noOfLines==1) {
+      mode = NORMAL;
+      //Follow move direction that was decided on line sensor readings.
     }
     
     else if (frontDist < obstacleDistance && frontDist > 5) {
@@ -16,7 +19,7 @@ int decide() {
       mode = OBSTACLE;
       signalLights(colorObstacle);
          
-      /*Passing by obstacle is a simple time based maneuver.*/
+      /*Passing by obstacle is a simple time based maneuver. Will just do these things in sequence.*/
       turnRightHard();
       delay(obstaclePhase1);
       goStraight();
@@ -29,106 +32,96 @@ int decide() {
       delay(obstaclePhase5);
       mode = GAP; //in gap mode goes straight until finding line again
       moveDirection = STRAIGHT;
-      signalLights(colorGap);
     }
   
     else if (noOfLines == 0) {
       mode = GAP;
       moveDirection = STRAIGHT;//Override move direction from line sensors, probably not necessary because no lines were detected anyway.
-      signalLights(colorGap);
     }
   
-    /*else if (noOfLines >=2 && doubleLine) {
+    else if (noOfLines==2) {
+      //TODO: add additional check that the one line appeared on side.
       mode = PRELOOPCROSSING;
       //TODO: save direction from where new line appeared.
-      //Follow move direction that was decided only on line sensor readings.
-      signalLights(colorPreloop);
-    }*/
-  
-    else if (noOfLines >=1) { // 1 or more line locations detected but not double line.
-      mode = NORMAL;
-      //Follow move direction that was decided only on line sensor readings.
-      signalLights(colorNormal);
     }
 
     else if (noOfLines>2) { // more than two lines detected, assume start and finish markings
       mode = ALLBLACK;
       //Follow move direction that was decided only on line sensor readings... hope this is sufficient
-      signalLights(colorAllblack);
     }
 
   } //end of NORMAL mode decision options
 
   else if (mode == GAP) {
-    if (noOfLines > 0) {
+    signalLights(colorGap);
+    
+    if (noOfLines > 0) {//line found, exit
       mode = NORMAL;
-      //Follow move direction that was decided only on line sensor readings.
-      signalLights(colorNormal);
+      //Follow move direction that was decided on line sensor readings.
     }
     else {
-      moveDirection = STRAIGHT;//Override move direction from line sensors, probably not necessary because no lines were detected anyway.
-      signalLights(colorGap);
+      //Follow move direction that was decided on line sensor readings - it's straight if no line detected.
     }
   }
 
-  else if (mode == PRELOOPCROSSING) {
-    if (noOfLines<=2 && !doubleLine) {
+  else if (mode == PRELOOPCROSSING) {   
+    //TODO: add additional check that the one line appeared on side and moves closer to other line.
+    signalLights(colorPreloop);
+    
+    if (noOfLines==1) { //two lines have gathered into one, assume loop knot
       mode = LOOPCROSSING;
-      //Follow move direction that was decided only on line sensor readings.
-      signalLights(colorLoop);
+      //Follow move direction that was decided on line sensor readings.
     }
     else {
-      //Follow move direction that was decided only on line sensor readings.
+      //Follow move direction that was decided on line sensor readings.
       //TODO direction adjustment, detect which is new line
-      signalLights(colorPreloop);
     }
   }
   
   else if (mode == LOOPCROSSING) {
-    if (noOfLines>=2 && doubleLine) {
+    signalLights(colorLoop);
+    
+    if (noOfLines==2) { //two lines have separated assume got over knot part
       mode = AFTERLOOPCROSSING;
       //TODO direction adjustment based on the "new" line detected in PRELOOPCROSSING mode.
-      signalLights(colorAfterloop);
+      
     }
     else {
       //Follow move direction that was decided only on line sensor readings.
-      signalLights(colorLoop);
     }
   }
   
   else if (mode == AFTERLOOPCROSSING) {
-    if (noOfLines<=2 && !doubleLine) {
+    signalLights(colorAfterloop);
+    
+    if (noOfLines==1) { //Second line has left sight, back to normal mode.
       mode = NORMAL;
       //Follow move direction that was decided only on line sensor readings.
       signalLights(colorNormal);
     }
     else {
       //TODO direction adjustment based on the "new" line detected in PRELOOPCROSSING mode
-      signalLights(colorAfterloop);
     }
   }
 
   else if (mode=FLYING) {
+    signalLights(colorFlying);
     if (floorDist <= floorOKThres) {
       mode = NORMAL;
-      //Follow move direction that was decided only on line sensor readings.
-      signalLights(colorNormal);
     }
     else {
       moveDirection = STRAIGHT;//Override move direction from line sensors.
-      signalLights(colorFlying);
     }
   }
 
   else if (mode == ALLBLACK) {
-    if (noOfLines <=2 && !doubleLine) {
+    signalLights(colorAllblack);
+    
+    if (noOfLines<2) {
       mode = NORMAL;
-      //Follow move direction that was decided only on line sensor readings.
-      signalLights(colorNormal);
     }
     else {
       moveDirection = STRAIGHT;//Override move direction from line sensors.
-      signalLights(colorAllblack);
     }
   }
   

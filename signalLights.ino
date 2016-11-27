@@ -1,11 +1,47 @@
 
-void signalLights(unsigned long color) {
+void signalLights(byte mode) {
+  unsigned long color;
+  unsigned long colorDim;
+  switch (mode) {
+    case NORMAL:
+      color=colorNormal;
+      colorDim=colorNormalDim;
+      break;
+    case GAP:
+      color=colorGap;
+      colorDim=colorGap;
+      break;
+    case PRELOOPCROSSING:
+      color=colorPreloop;
+      colorDim=colorPreloopDim;
+      break;
+    case LOOPCROSSING:
+      color=colorLoop;
+      colorDim=colorLoopDim;
+      break;
+    case AFTERLOOPCROSSING:
+      color=colorAfterloop;
+      colorDim=colorAfterloopDim;
+      break;
+    case OBSTACLE:
+      color=colorObstacle;
+      colorDim=colorObstacleDim;
+      break;
+    case FLYING:
+      color=colorFlying;
+      colorDim=colorFlyingDim;
+      break;
+    default: // ALLBLACK
+      color=colorAllblack;
+      colorDim=colorAllblackDim;
+  }
+
   for(i=0; i<9; i++) {
-      if (hasBlack[i]) {
+      if (hasLine[i]) {
         turnSignals.setPixelColor(i, color);
       }
       else {
-        turnSignals.setPixelColor(i, colorOff);
+        turnSignals.setPixelColor(i, colorDim);
       }
     }
     turnSignals.show();

@@ -5,10 +5,7 @@ Arduino MEGA controller.
 
 /**
  * TODO
- * remove extra hasBlack slots, one for each sensor is enough
- * remove hasGray - too hard to detect and irrelevant
  * make preloop detect and save the direction where the new line comes in.
- * maybe analyze hasBlack into 1, 2, 3 separate lines every time? hasgap logic ...
  * make preloop and/or loop get dropped after some reasonable timeout
  * make indicator light strips show color even when no line exists (gap mode)
  */
@@ -61,9 +58,8 @@ void setup() {
   
   #ifdef DEBUG
     Serial.begin(9600);
+    delay(3000);
   #endif
- 
-  delay(3000);
 
   turnSignals.begin();
   turnSignals.show();
@@ -81,7 +77,6 @@ void loop() {
   
   decide();
   
- 
   saveReadings(); 
 
   if (runMotors) {

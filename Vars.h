@@ -11,13 +11,18 @@
 #define OBSTACLE 5
 #define FLYING 6
 #define ALLBLACK 7
-
 byte mode;
 
+/**
+ * Loop direction is saved as byte.
+ */
 #define LEFT 0
 #define RIGHT 1
 byte loopDirection;
 
+/**
+ * Movements - turn direction and steepness are passed as byte.
+ */
 #define HARDLEFT 1
 #define SMOOTHLEFT 2
 #define STRAIGHT 3
@@ -27,41 +32,28 @@ byte moveDirection;
 
 
 /*** Other variables ***********************************************************************************/
-int saveCounter = 0; //helper for re-using the history arrays
 
-/*** Storing line sensor data ***/
+/*** Line sensors related ***/
 int sensorReadings[9]; //left to right. Analog readings from sensors.
-boolean hasBlack[9];
-boolean hasGray[9];
-boolean hasLine[17]; //left to right. Whether the line can be detected under one sensor or two neighbouring sensors.
-boolean hasLinePrev[17][saveSize];//history of line existence under each sensor or pair of sensors on previous readings
+boolean hasLine[9]; //left to right. If the sensor reads below or above the black threshold.
+boolean hasLinePrev[9][saveSize];//history of line existence under each sensor on previous readings
 byte noOfLines; //to detect line loop we have to see two lines under sensor at once
 byte noOfLinesPrev[saveSize]; //history for it
-boolean doubleLine; //true if black-white-black situation detected, but not more than two black areas.
+int saveCounter = 0; //helper for re-using the history arrays.
 
-unsigned long interruptTime;
-unsigned long lastInterruptTime = 0;
-boolean runMotors = false;
+/*Obstacle sensor and maneuver related*/
+int frontDist; //Sensor reading
+unsigned long obstacleStart;//for storing time
 
-/*Obstacle maneuver related*/
-int frontDist;
-int floorDist;
-unsigned long obstacleStart;
+/*Detecting hill top where line sensor can not be trusted.*/
+int floorDist; //Sensor reading
 
+/*A button changes between drive or stall mode.*/
+boolean runMotors = false; //current state
+unsigned long interruptTime; /*For debouncing drive/stall mode button.*/
+unsigned long lastInterruptTime = 0; /*For debouncing drive/stall mode button.*/
 
-/**
- * NORMAL - blue
- * GAP - white
- * PRELOOPCROSSING orange
- * LOOPCROSSING red
- * AFTERLOOPCROSSING purple
- * OBSTACLE 
- * FLYING
- * ALLBLACK
- */
-
-
- /*Other*/
+/*Other*/
 int i, j;
 int debugCounter = 0;
 
