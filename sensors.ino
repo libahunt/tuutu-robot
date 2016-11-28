@@ -43,11 +43,11 @@ void readSensors() {
    * Calculate which way to move to keep on the line(s) that were detected.
    * In some modes this decision will be overridden.
    */
-  int leftFifth = int(hasLine[0]) + int(hasLine[1]) + int(hasLine[2]);
-  int leftCenterFifth = int(hasLine[3]) + int(hasLine[4]) + int(hasLine[5]) + int(hasLine[6]);
-  int centerFifth = int(hasLine[7]) + int(hasLine[8]) + int(hasLine[9]);
-  int rightCenterFifth = int(hasLine[13]) + int(hasLine[12]) + int(hasLine[11] + int(hasLine[10]));
-  int rightFifth = int(hasLine[16]) + int(hasLine[15]) + int(hasLine[14]);
+  int leftFifth = int(hasLine[0]) + int(hasLine[1]);
+  int leftCenterFifth = int(hasLine[2]) + int(hasLine[3]);
+  int centerFifth = int(hasLine[4]);
+  int rightCenterFifth = int(hasLine[5]) + int(hasLine[6]);
+  int rightFifth = int(hasLine[7]) + int(hasLine[8]);
 
   if ((leftFifth + leftCenterFifth) > (rightFifth + rightCenterFifth)) {
      if (leftFifth > leftCenterFifth) {
@@ -85,7 +85,7 @@ void readSensors() {
 void saveReadings() {
   
   /*save line existence states*/
-  for (i=0; i<17; i++) {
+  for (i=0; i<9; i++) {
     hasLinePrev[i][saveCounter] = hasLine[i];
   }
   noOfLinesPrev[saveCounter] = noOfLines;

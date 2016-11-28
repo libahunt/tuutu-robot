@@ -58,6 +58,7 @@ void setup() {
   
   #ifdef DEBUG
     Serial.begin(9600);
+    Serial.println("Start");
     delay(3000);
   #endif
 
@@ -93,7 +94,7 @@ void loop() {
       DP(sensorReadings[j]);
       DP(" "); 
     }
-    for (j=0; j<17; j++) {
+    for (j=0; j<9; j++) {
       DP(hasLine[j]);
     }
     DP(" ");
