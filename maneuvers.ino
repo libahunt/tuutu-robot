@@ -1,77 +1,12 @@
-void moveDir(int moveDirection) {
-  if (moveDirection == HARDLEFT) {
-    turnLeftHard();
-  }
-  else if (moveDirection == SMOOTHLEFT) {
-    turnLeft();
-  }
-  else if (moveDirection == STRAIGHT) {
-    goStraight();
-  }
-  else if (moveDirection == SMOOTHRIGHT) {
-    turnRight();
-  }
-  else if (moveDirection == HARDRIGHT) {
-    turnRightHard();
-  }
-}
-  
-void goStraight() { 
-  analogWrite(motorRightFw, speedPWM);
-  analogWrite(motorRightRv, 0);
-  analogWrite(motorLeftFw, speedPWM);
-  analogWrite(motorLeftRv, 0);
-}
-
-void goStraightSlow() { 
-  analogWrite(motorRightFw, speedSlowPWM);
-  analogWrite(motorRightRv, 0);
-  analogWrite(motorLeftFw, speedSlowPWM);
-  analogWrite(motorLeftRv, 0);
-}
-
-void turnLeft() {
-  analogWrite(motorRightFw, speedPWM);
-  analogWrite(motorRightRv, 0);
-  analogWrite(motorLeftFw, 0);
-  analogWrite(motorLeftRv, 0);
-}
-
-void turnRight() {
-  analogWrite(motorRightFw, 0);
-  analogWrite(motorRightRv, 0);
-  analogWrite(motorLeftFw, speedPWM);
-  analogWrite(motorLeftRv, 0);
-}
-
-void turnLeftHard() {
-  analogWrite(motorRightFw, speedPWM);
-  analogWrite(motorRightRv, 0);
-  analogWrite(motorLeftFw, 0);
-  analogWrite(motorLeftRv, hardTurnPWM);
-}
-
-void turnRightHard() {
-  analogWrite(motorRightFw, 0);
-  analogWrite(motorRightRv, hardTurnPWM);
-  analogWrite(motorLeftFw, speedPWM);
-  analogWrite(motorLeftRv, 0);
-}
-
-
-void stopMotors() {
-  analogWrite(motorRightFw, 0);
-  analogWrite(motorRightRv, 0);
-  analogWrite(motorLeftFw, 0);
-  analogWrite(motorLeftRv, 0);
-}
-
-
-
-/*Alternative motors control.*/
+/**
+ * Motors are driven based on speed coefficent and maximum PWM value passed into this function.
+ * 
+ * Coeficent parameters can be negative for reversing movement.
+ * Coeficents values don't matter, just their comaprision to each other.
+ * On turns maxPWM value is used for the faster turning motor.
+ */
 
 void moveMotors(int maxPWM, float leftSpeedCoef, float rightSpeedCoef) {
-  /*Coeficent parameters can be negative too for reversing movement.*/
     int leftSpeed, rightSpeed, leftFwPWM, leftRvPWM, rightFwPWM, rightRvPWM;
     if (abs(leftSpeedCoef) > abs(rightSpeedCoef)) {
       leftSpeed = maxPWM;
@@ -107,4 +42,5 @@ void moveMotors(int maxPWM, float leftSpeedCoef, float rightSpeedCoef) {
     analogWrite(motorLeftRv, leftRvPWM);
     analogWrite(motorRightFw, rightFwPWM);
     analogWrite(motorRightRv, rightRvPWM);
+    
   }

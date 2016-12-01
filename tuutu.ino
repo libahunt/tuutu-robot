@@ -5,14 +5,12 @@ Arduino MEGA controller.
 
 /**
  * TODO
- * redo turning logic?
- * make preloop detect and save the direction where the new line comes in.
- * make preloop and/or loop get dropped after some reasonable timeout
+ * make afterloop follow the right line
  * add tower movements functionality
  * 
  */
 
-//#define DEBUG /*comment this line out in production then all DP Serial instructsions are ignored*/
+#define DEBUG /*comment this line out in production then all DP Serial instructsions are ignored*/
 #include "DebugUtils.h"/*leave this in, otherwise you get errors*/
 
 #include <NewPing.h>
@@ -29,7 +27,7 @@ NewPing obstacleSonar(TRIGGER_PIN_OBS, ECHO_PIN_OBS, MAX_DISTANCE_OBS);
 NewPing edgeSonar(TRIGGER_PIN_EDGE, ECHO_PIN_EDGE, MAX_DISTANCE_EDGE);
 
 /*** Neopixels are used as fancy "turn signal" lights that give information about the program state. ***/
-Adafruit_NeoPixel turnSignals = Adafruit_NeoPixel(10, PIXELPIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel signalLights = Adafruit_NeoPixel(10, PIXELPIN, NEO_GRB + NEO_KHZ800);
 #include "SignalColors.h"
 
 
@@ -37,22 +35,16 @@ Adafruit_NeoPixel turnSignals = Adafruit_NeoPixel(10, PIXELPIN, NEO_GRB + NEO_KH
 
 void setup() {
   
-  /*motors*/
+  /*Motors.*/
   pinMode(motorLeftFw, OUTPUT);
   pinMode(motorLeftRv, OUTPUT);
   pinMode(motorRightFw, OUTPUT);
   pinMode(motorRightRv, OUTPUT);
   
-  /*sensors*/
-  pinMode(sensorPins[0], INPUT);
-  pinMode(sensorPins[1], INPUT);
-  pinMode(sensorPins[2], INPUT);
-  pinMode(sensorPins[3], INPUT);
-  pinMode(sensorPins[4], INPUT); 
-  pinMode(sensorPins[5], INPUT);
-  pinMode(sensorPins[6], INPUT);
-  pinMode(sensorPins[7], INPUT);
-  pinMode(sensorPins[8], INPUT);
+  /*Sensors.*/
+  for (i=0; i<9; i++) {
+    pinMode(sensorPins[i], INPUT);
+  }
 
   //pinMode(towerPosPot, INPUT);
   //pinMode(towerMotorUp, INPUT);
@@ -62,120 +54,185 @@ void setup() {
   
   #ifdef DEBUG
     Serial.begin(9600);
-    Serial.println("Start");
-    delay(3000);
+    Serial.println("Started");
+    //delay(3000);
   #endif
 
-  turnSignals.begin();
-  turnSignals.show();
+  /*Turn off previous state in RGB LEDs.*/
+  signalLights.begin();
+  signalLights.show();
 
   mode = NORMAL;
-  moveDirection = STRAIGHT;
-
-  /*analogWrite(motorRightFw, speedPWM);
-  analogWrite(motorRightRv, 0);
-  analogWrite(motorLeftFw, 0);
-  analogWrite(motorLeftRv, 0);
-  delay(10000);*/
-
-  turnSignals.setPixelColor(0, turnSignals.Color(255, 0, 0));
-  turnSignals.setPixelColor(1, turnSignals.Color(0, 255, 0));
-  turnSignals.setPixelColor(2, turnSignals.Color(0, 0, 255));
-  turnSignals.show();
-  delay(5000);
-  
+  lastMode = NORMAL;
   
 } // /setup
 
+
+
 void loop() {
-  
+
+  /*Do mesurements and save them.*/
   readSensors();
   saveReadings();
 
-  chooseDirection();
+  /*Derive mode from sensor readings*/
   decideMode();
-  
-  
 
+  /*Behaviours in different modes.*/
+  switch (mode) {
+      
+    case GAP:
+    /* Straight, full speed. */
+      leftSpeedCoef = 1;
+      rightSpeedCoef = 1;
+      maxPWM = fullSpeedPWM;
+      break;
+      
+    case ALLBLACK:
+      /* Straight, full speed. */
+      leftSpeedCoef = 1;
+      rightSpeedCoef = 1;
+      maxPWM = fullSpeedPWM;
+      break;
+      
+    case FLYING:
+      /* Straight, slow down */
+      leftSpeedCoef = 1;
+      rightSpeedCoef = 1;
+      maxPWM = slowSpeedPWM;
+      break;
+      
+    case PRELOOPCROSSING:
+      /* Decide from line sensor readings, full speed. 
+      Hoping this is not erroneus reading and the two lines will gather into one soon. */
+      moveDirectionForLine();
+      maxPWM = fullSpeedPWM;
+      break;
+      
+    case LOOPCROSSING:
+      /* Decide from line sensor readings, full speed. */
+      moveDirectionForLine();
+      maxPWM = fullSpeedPWM;
+      break;
+      
+    case AFTERLOOPCROSSING:
+      //TODO follow the line that is same side as previously saved loopDirection.
+      //temp:
+      moveDirectionForLine();
+      maxPWM = fullSpeedPWM;
+
+    case OBSTACLE:
+      /*Passing by obstacle is a simple time based maneuver that does not need sensor readings. Will just do these things in sequence.*/
+      /*turnRightHard();
+      delay(obstaclePhase1);
+      goStraight();
+      delay(obstaclePhase2);
+      turnLeftHard();
+      delay(obstaclePhase3);
+      goStraight();
+      delay(obstaclePhase4);
+      turnLeftHard();
+      delay(obstaclePhase5);
+      mode = GAP; //in gap mode goes straight until finding line again
+      moveDirection = STRAIGHT;    */  
+      
+      /*temp*/
+      delay(500);
+      mode = NORMAL;
+      break;
+
+    default: //NORMAL
+      /* Decide from line sensor readings, full speed. */
+      moveDirectionForLine();
+      maxPWM = fullSpeedPWM;
+
+  }
+
+
+  /* Show mode and line sensor readings status on a strip of RGB LEDs*/
+  signalLightsShow();
+  
+  /*Drive motors if allowed.*/
   if (runMotors) {
     //moveDir(moveDirection);
-    moveMotors(speedPWM, leftSpeedCoef, rightSpeedCoef);
+    moveMotors(fullSpeedPWM, leftSpeedCoef, rightSpeedCoef);
   }
   else {
     //stopMotors();
-    moveMotors(0, 0, 0);
+    moveMotors(0, 0, 0); //Stop.
   }
+
+
   
+  #ifdef DEBUG
+    if (debugCounter == 25) {
+    
+      for (j=0; j<9; j++) {
+        DP(sensorReadings[j]);
+        DP(" "); 
+      }
+      for (j=0; j<9; j++) {
+        DP(hasLine[j]);
+      }
+      DP(" ");
   
-  if (debugCounter == 25) {
+      DP("Front: ");
+      DP(frontDist);
   
-    for (j=0; j<9; j++) {
-      DP(sensorReadings[j]);
-      DP(" "); 
-    }
-    for (j=0; j<9; j++) {
-      DP(hasLine[j]);
-    }
-    DP(" ");
+      DP(" \t Floor: ");
+      DP(floorDist);
+      DP(" \t");
+      
+      if (mode == NORMAL) {
+        DP("NORMAL");
+      }
+      else if (mode == GAP) {
+        DP("GAP"); 
+      }
+      else if (mode == PRELOOPCROSSING) {
+        DP("PRELOOP");
+      }
+      else if (mode == LOOPCROSSING) {
+        DP("LOOP");
+      }
+      else if (mode == AFTERLOOPCROSSING) {
+        DP("AFTERLOOP");
+      }
+      else if(mode == OBSTACLE) {
+        DP("OBSTACLE");
+      }  
+      else if(mode == FLYING) {
+        DP("FLYING");
+      }  
+      else if(mode == ALLBLACK) {
+        DP("ALLBLACK");
+      }
+  
+      DP(" Lines:");
+      DP(noOfLines);
+  
+      DP(" L");
+      DP(leftSpeedCoef);
+      DP("R");
+      DP(rightSpeedCoef);
 
-    DP("Front: ");
-    DP(frontDist);
+      DP(" tp");
+      DP(analogRead(towerPosPot));
+      
+      DPL(" ");
+      debugCounter = 0;
+      
+    }
+    debugCounter++;
 
-    DP(" \t Floor: ");
-    DP(floorDist);
-    DP(" \t");
-    
-    if (mode == NORMAL) {
-      DP("NORMAL");
-    }
-    else if (mode == GAP) {
-      DP("GAP"); 
-    }
-    else if (mode == PRELOOPCROSSING) {
-      DP("PRELOOP");
-    }
-    else if (mode == LOOPCROSSING) {
-      DP("LOOP");
-    }
-    else if (mode == AFTERLOOPCROSSING) {
-      DP("AFTERLOOP");
-    }
-    else if(mode == OBSTACLE) {
-      DP("OBSTACLE");
-    }  
-    else if(mode == FLYING) {
-      DP("FLYING");
-    }  
-    else if(mode == ALLBLACK) {
-      DP("ALLBLACK");
-    }
+  #endif
 
-    DP(" L:");
-    DP(noOfLines);
-
-    DP(" D:");
-    DP(moveDirection);
-    
-    DPL(" ");
-    debugCounter = 0;
-    
-  }
-  debugCounter++;
-
-  delay(100);
-  //delay(readingInterval);
+  /*Wait a little before measuring and driving again.*/
+  delay(readingInterval);
   
 } // /loop
 
 
-//interrupt service routine for the button
-void toggleRunning() {
-  // Debouncing interrupt taken from http://forum.arduino.cc/index.php?topic=45000.0
-  interruptTime = millis();
-  if (interruptTime - lastInterruptTime > 200) {
-    runMotors = !runMotors;
-  }
-  lastInterruptTime = interruptTime;
-}
+
 
     

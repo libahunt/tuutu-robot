@@ -1,138 +1,178 @@
+/**
+ * Mode is set based on floor sensor, obstacle sensor readings and number of lines detected.
+ * 
+ * Saves into global variable: mode.
+ */
 
 int decideMode() {
 
   if (mode == NORMAL) { //most of the decisions happen when current mode is normal
-    
-    signalLights(colorNormal);
-    
+
     if (floorDist > floorOKThres) {
       mode = FLYING;
+      lastMode = NORMAL;
     }
     
-    /*else if (frontDist < obstacleDistance && frontDist > 0) {
-  
+    else if (frontDist < obstacleDistance && frontDist > 0) {
       mode = OBSTACLE;
-      signalLights(colorObstacle);
-         
-      /*Passing by obstacle is a simple time based maneuver. Will just do these things in sequence.*
-      turnRightHard();
-      delay(obstaclePhase1);
-      goStraight();
-      delay(obstaclePhase2);
-      turnLeftHard();
-      delay(obstaclePhase3);
-      goStraight();
-      delay(obstaclePhase4);
-      turnLeftHard();
-      delay(obstaclePhase5);
-      mode = GAP; //in gap mode goes straight until finding line again
-      moveDirection = STRAIGHT;
-    }*/
-
-    else if (noOfLines==1) {
-      mode = NORMAL;
-      //Follow move direction that was decided on line sensor readings.
+      lastMode = NORMAL;
     }
-  
+
     else if (noOfLines==0) {
       mode = GAP;
-      moveDirection = STRAIGHT;//Override move direction from line sensors, probably not necessary because no lines were detected anyway.
+      lastMode = NORMAL;
     }
   
-    /*else if (noOfLines==2) {
-      //TODO: add additional check that the one line appeared on side.
+    else if (noOfLines==2) {
       mode = PRELOOPCROSSING;
-      //TODO: save direction from where new line appeared.
-    }*/
-
-    else if (noOfLines>1) { // more than two lines detected, assume start and finish markings //TEMP
-      mode = ALLBLACK;
-      //Follow move direction that was decided only on line sensor readings... hope this is sufficient
+      lastMode = NORMAL;
+      /* Save time to timeout if this is erroneus decision. */
+      loopStartTime = millis();
     }
+
+    else if (noOfLines>2) { // more than two lines detected, assume start and finish markings
+      mode = ALLBLACK;
+      lastMode = NORMAL;
+    }
+
+    /*if noOfLines==1
+      stays in NORMAL mode
+    */
 
   } //end of NORMAL mode decision options
 
   else if (mode == GAP) {
-    signalLights(colorGap);
+
+    if (floorDist > floorOKThres) {
+      mode = FLYING;
+      lastMode = GAP;
+    }
     
-    if (noOfLines > 0) {//line found, exit
+    else if (noOfLines > 0) {//line found, exit from gap mode
       mode = NORMAL;
-      //Follow move direction that was decided on line sensor readings.
+      lastMode = GAP;
     }
-    else {
-      //Follow move direction that was decided on line sensor readings - it's straight if no line detected.
-    }
+
   }
 
-  else if (mode == PRELOOPCROSSING) {   
-    //TODO: add additional check that the one line appeared on side and moves closer to other line.
-    signalLights(colorPreloop);
+  else if (mode == PRELOOPCROSSING) {
     
     if (noOfLines == 1) { //two lines have gathered into one, assume loop knot
       mode = LOOPCROSSING;
-      //Follow move direction that was decided on line sensor readings.
+      lastMode = PRELOOPCROSSING;
+
+      /* Analyze from which side the additional line appeared. */
+      loopDirection = findLoopDirection(saveCounter);
+      
+      /* Save time to timeout if this is erroneus decision. */
+      loopStartTime = millis();
     }
-    else {
-      //Follow move direction that was decided on line sensor readings.
-      //TODO direction adjustment, detect which is new line
+
+    /* Timeout into normal mode. */
+    else if (millis() > loopStartTime + loopTimeout) {
+      mode = NORMAL;
+      lastMode = PRELOOPCROSSING;
     }
+
   }
   
   else if (mode == LOOPCROSSING) {
-    signalLights(colorLoop);
-
-    loopDirection = findLoopDirection(saveCounter);
     
     if (noOfLines == 2) { //two lines have separated assume got over knot part
       mode = AFTERLOOPCROSSING;
-      //TODO direction adjustment based on the "new" line detected in PRELOOPCROSSING mode.
-      
+      lastMode = LOOPCROSSING;      
     }
-    else {
-      //Follow move direction that was decided only on line sensor readings.
+
+    /* Timeout into normal mode. */
+    else if (millis() > loopStartTime + loopTimeout) {
+      mode = NORMAL;
+      lastMode = LOOPCROSSING;
     }
+    
   }
   
   else if (mode == AFTERLOOPCROSSING) {
-    signalLights(colorAfterloop);
     
     if (noOfLines == 1) { //Second line has left sight, back to normal mode.
       mode = NORMAL;
-      //Follow move direction that was decided only on line sensor readings.
-      signalLights(colorNormal);
+      lastMode = AFTERLOOPCROSSING;
     }
-    else {
-      //TODO direction adjustment based on the "new" line detected in PRELOOPCROSSING mode
+
+    else if (noOfLines == 0) { //Second line has left sight, back to normal mode.
+      mode = GAP;
+      lastMode = AFTERLOOPCROSSING;
     }
+
   }
 
   else if (mode == FLYING) {
-    signalLights(colorFlying);
+    
     if (floorDist <= floorOKThres) {
       mode = NORMAL;
+      lastMode = FLYING;
     }
-    else {
-      moveDirection = STRAIGHT;//Override move direction from line sensors.
-    }
+    
   }
 
   else if (mode == ALLBLACK) {
-    signalLights(colorAllblack);
     
-    if (noOfLines < 2) {
-      mode = NORMAL;
+    if (floorDist > floorOKThres) {
+      mode = FLYING;
+      lastMode = ALLBLACK;
     }
-    else {
-      moveDirection = STRAIGHT;//Override move direction from line sensors.
+    
+    else if (noOfLines == 1) {
+      mode = NORMAL;
+      lastMode = ALLBLACK;
+    }
+    
+    else if (noOfLines == 0); {
+      mode = GAP;
+      lastMode = ALLBLACK;
     }
   }
+
+  /*Exiting from obstacle mode happens in main loop.*/
+}
+
+
+
+/**
+ * Calculating move direction from detected lines.
+ *
+ * Saves into gloabal variables: leftSpeedCoef, rightSpeedCoef.
+ */
+
+void moveDirectionForLine() {
+  
+  int hasLineSum=0;
+  for (i=0; i<9;i++) {
+    hasLineSum += hasLine[i];
+  }
+
+  float leftWeight = (hasLine[0]*8 + hasLine[1]*4 + hasLine[2]*2 + hasLine[3]*1) * noOfLines / hasLineSum;
+  float rightWeight = (hasLine[8]*8 + hasLine[7]*4 + hasLine[6]*2 + hasLine[5]*1) * noOfLines / hasLineSum;
+  float hasLineDiff = abs(leftWeight - rightWeight);
+
+  if (leftWeight > rightWeight) {
+    leftSpeedCoef = -1 * (hasLineDiff - 4);
+    rightSpeedCoef = leftWeight;
+  }
+  else if (leftWeight < rightWeight) {
+    leftSpeedCoef = rightWeight;
+    rightSpeedCoef = -1 * (hasLineDiff - 4);
+  }
+  
   
 }
 
+
 /**
- * Detects on which side the additional black line appeared into view.
+ * Detects on which side an additional black line appeared into view.
  * 
  * This function is called at loop crossing point. 
+ * Paramater currentSaveCounter - from which point backwards to analyze old readings.
+ * Returns left or right as byte.
  */
 byte findLoopDirection(int currentSaveCounter) {
   
@@ -176,7 +216,7 @@ byte findLoopDirection(int currentSaveCounter) {
       break;
     }
     
-  }// /for
+  }
 
   if (leftmost > rightmost) {
     return LEFT;

@@ -12,6 +12,7 @@
 #define FLYING 6
 #define ALLBLACK 7
 byte mode;
+byte lastMode;
 
 /**
  * Loop direction is saved as byte.
@@ -22,17 +23,18 @@ byte loopDirection;
 
 /**
  * Movements - turn direction and steepness are passed as byte.
- */
+ 
 #define HARDLEFT 1
 #define SMOOTHLEFT 2
 #define STRAIGHT 3
 #define SMOOTHRIGHT 4
 #define HARDRIGHT 5
-byte moveDirection;
+byte moveDirection;*/
 
 /*For passing motor relative speeds around:*/
 float leftSpeedCoef;
 float rightSpeedCoef;
+int maxPWM;
 
 
 /*** Other variables ***********************************************************************************/
@@ -51,6 +53,9 @@ unsigned long obstacleStart;//for storing time
 
 /*Detecting hill top where line sensor can not be trusted.*/
 int floorDist; //Sensor reading
+
+/*Recovering for erroneus lineloop decisions with timeout.*/
+unsigned long loopStartTime;
 
 /*A button changes between drive or stall mode.*/
 boolean runMotors = false; //current state

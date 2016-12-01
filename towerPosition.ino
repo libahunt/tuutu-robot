@@ -1,4 +1,7 @@
-
+/**
+ * Tank tower moves up and down for the luls.
+ */
+ 
 void towerUp() {
   while (analogRead(towerPosPot) < towerUpReading) {
     analogWrite(towerMotorUp,towerMotorPWM);
