@@ -3,7 +3,6 @@
  * 
  * Saves into global variable: mode.
  */
-
 int decideMode() {
 
   if (mode == NORMAL) { //most of the decisions happen when current mode is normal

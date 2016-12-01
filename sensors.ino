@@ -40,10 +40,15 @@ void readSensors() {
   /*Get reading from floor distance - mountain top sensor.*/
   floorDist = edgeSonar.ping_cm();
   
-} // /readSensors
+}
 
 
 
+/**
+ * Saves sensor readings into history array.
+ * 
+ * The array gets overwritten after fillig up. saveCounter keeps track of current position.
+ */
 void saveReadings() {
   
   /*Save line existence states.*/
@@ -58,8 +63,5 @@ void saveReadings() {
     saveCounter = 0;
   } 
   
-} // /saveReadings
-
-
-
+}
 

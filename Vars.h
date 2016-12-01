@@ -22,24 +22,15 @@ byte lastMode;
 byte loopDirection;
 
 /**
- * Movements - turn direction and steepness are passed as byte.
- 
-#define HARDLEFT 1
-#define SMOOTHLEFT 2
-#define STRAIGHT 3
-#define SMOOTHRIGHT 4
-#define HARDRIGHT 5
-byte moveDirection;*/
-
-/*For passing motor relative speeds around:*/
+ * For passing motor relative speeds around.
+ */
 float leftSpeedCoef;
 float rightSpeedCoef;
 int maxPWM;
 
-
-/*** Other variables ***********************************************************************************/
-
-/*** Line sensors related ***/
+/**
+ * Line sensors related.
+ */
 int sensorReadings[9]; //left to right. Analog readings from sensors.
 boolean hasLine[9]; //left to right. If the sensor reads below or above the black threshold.
 boolean hasLinePrev[saveSize][9];//history of line existence under each sensor on previous readings
@@ -47,22 +38,32 @@ byte noOfLines; //to detect line loop we have to see two lines under sensor at o
 byte noOfLinesPrev[saveSize]; //history for it
 int saveCounter = 0; //helper for re-using the history arrays.
 
-/*Obstacle sensor and maneuver related*/
+/**
+ * Obstacle sensor and maneuver related.
+ */
 int frontDist; //Sensor reading
 unsigned long obstacleStart;//for storing time
 
-/*Detecting hill top where line sensor can not be trusted.*/
+/**
+ * Detecting hill top where line sensor can not be trusted.
+ */
 int floorDist; //Sensor reading
 
-/*Recovering for erroneus lineloop decisions with timeout.*/
+/**
+ * Recovering for erroneus lineloop decisions with timeout.
+ */
 unsigned long loopStartTime;
 
-/*A button changes between drive or stall mode.*/
+/**
+ * A button changes between drive or stall mode.
+ */
 boolean runMotors = false; //current state
 unsigned long interruptTime; /*For debouncing drive/stall mode button.*/
 unsigned long lastInterruptTime = 0; /*For debouncing drive/stall mode button.*/
 
-/*Other*/
+/**
+ * Other.
+ */
 int i, j;
 int debugCounter = 0;
 

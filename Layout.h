@@ -25,7 +25,7 @@ const int motorRightRv = 2;
 const int sensorPins[] = {A7, A6, A5, A4, A3, A8, A0, A1, A2}; //left to right
 
 /*** Tank tower is moved by DC motor (H-bridge) and position tracked with a potentiometer. ***/
-const int towerPosPot = A9;
+const int towerPosPot = A11;
 const int towerMotorUp = 14;
 const int towerMotorDown = 15;
 

@@ -47,6 +47,3 @@ int towerUpReading = 800; //potentimeter reading in the upper position
 int towerDownReading = 100;  //potentimeter reading in the lower position
 int towerMotorPWM = 150; //PWM suitable for moving tower motor
 
-
-
-

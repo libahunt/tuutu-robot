@@ -1,11 +1,18 @@
-/***
-Linefollowing with obstacles robot operation script.
-Arduino MEGA controller.
-***/
+/**
+ * Linefollowing with obstacles - robot operation script.
+ * 
+ * For Arduino MEGA controller.
+ * 
+ * By Anna Jõgi a.k.a Libahunt Dec 30 2016. Version 0.1.
+ * This work is licensed under a Creative Commons Attribution 4.0 International License.
+ */
+
 
 /**
- * TODO
+ * TODO:
+ * turning logic might need revision about too low PWM-s
  * make afterloop follow the right line
+ * make obstacle maneuver work
  * add tower movements functionality
  * 
  */
