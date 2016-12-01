@@ -30,13 +30,17 @@ byte loopDirection;
 #define HARDRIGHT 5
 byte moveDirection;
 
+/*For passing motor relative speeds around:*/
+float leftSpeedCoef;
+float rightSpeedCoef;
+
 
 /*** Other variables ***********************************************************************************/
 
 /*** Line sensors related ***/
 int sensorReadings[9]; //left to right. Analog readings from sensors.
 boolean hasLine[9]; //left to right. If the sensor reads below or above the black threshold.
-boolean hasLinePrev[9][saveSize];//history of line existence under each sensor on previous readings
+boolean hasLinePrev[saveSize][9];//history of line existence under each sensor on previous readings
 byte noOfLines; //to detect line loop we have to see two lines under sensor at once
 byte noOfLinesPrev[saveSize]; //history for it
 int saveCounter = 0; //helper for re-using the history arrays.

@@ -14,7 +14,7 @@ unsigned long c = turnSignals.Color(0, 0, 0); //Special type for storing NeoPixe
                                               // declared only after creating neopixel object
                                               
 unsigned long colorNormal = turnSignals.Color(0, 0, 255);   //blue
-unsigned long colorNormalDim = turnSignals.Color(0, 0, 50);   
+unsigned long colorNormalDim = turnSignals.Color(0, 0, 25);   
 unsigned long colorGap = turnSignals.Color(90, 90, 90);      //white
 //no line, no need for two colors
 unsigned long colorPreloop = turnSignals.Color(200, 55, 0);  //orange

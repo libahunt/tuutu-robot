@@ -12,6 +12,8 @@ int readingInterval = 20-9; //after which time to read line sensors, in millisec
 
 int speedPWM = 120; //PWM speed for driving straight and for the outer wheel on turns
 int hardTurnPWM = speedPWM * 0.75; //On hard turns the other motor goes into reverse with this PWM.
+int speedSlowPWM = 120; //PWM speed for driving straight more carefully on mountain etc.
+
 
 /*obstacle maneuver timing settings - millisecond duration for each phase*/
 unsigned long obstacleTimeCoef = 1000;
@@ -28,6 +30,11 @@ int obstacleDistance = 20; //at which distance measurement to decide that this i
  * We attempted for 5 readings per cm, so 10cm history is 50 readings long.
  */
 const int saveSize = 50; //length of stored history, number of readings
+
+/*Tank tower position related:*/
+int towerUpReading = 800; //potentimeter reading in the upper position
+int towerDownReading = 100;  //potentimeter reading in the lower position
+int towerMotorPWM = 150; //PWM suitable for moving tower motor
 
 
 

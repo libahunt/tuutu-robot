@@ -5,12 +5,14 @@ Arduino MEGA controller.
 
 /**
  * TODO
+ * redo turning logic?
  * make preloop detect and save the direction where the new line comes in.
  * make preloop and/or loop get dropped after some reasonable timeout
- * make indicator light strips show color even when no line exists (gap mode)
+ * add tower movements functionality
+ * 
  */
 
-#define DEBUG /*comment this line out in production then all DP Serial instructsions are ignored*/
+//#define DEBUG /*comment this line out in production then all DP Serial instructsions are ignored*/
 #include "DebugUtils.h"/*leave this in, otherwise you get errors*/
 
 #include <NewPing.h>
@@ -18,7 +20,7 @@ Arduino MEGA controller.
 
 #include "Layout.h" //Pin connections
 #include "Settings.h" //Variables that might need tweaking
-#include "Vars.h"
+#include "Vars.h" //Other variable declarations
 
 /*** One Ultrasonic distance sensor detects the block shaped obstacle on the track. ***/
 NewPing obstacleSonar(TRIGGER_PIN_OBS, ECHO_PIN_OBS, MAX_DISTANCE_OBS);
@@ -52,9 +54,11 @@ void setup() {
   pinMode(sensorPins[7], INPUT);
   pinMode(sensorPins[8], INPUT);
 
-//  pinMode(18, INPUT);
+  //pinMode(towerPosPot, INPUT);
+  //pinMode(towerMotorUp, INPUT);
+  //pinMode(towerMotorDown, INPUT);
 
-  attachInterrupt(digitalPinToInterrupt(18), toggleRunning, LOW);
+  attachInterrupt(digitalPinToInterrupt(runToggleButton), toggleRunning, LOW);
   
   #ifdef DEBUG
     Serial.begin(9600);
@@ -68,6 +72,17 @@ void setup() {
   mode = NORMAL;
   moveDirection = STRAIGHT;
 
+  /*analogWrite(motorRightFw, speedPWM);
+  analogWrite(motorRightRv, 0);
+  analogWrite(motorLeftFw, 0);
+  analogWrite(motorLeftRv, 0);
+  delay(10000);*/
+
+  turnSignals.setPixelColor(0, turnSignals.Color(255, 0, 0));
+  turnSignals.setPixelColor(1, turnSignals.Color(0, 255, 0));
+  turnSignals.setPixelColor(2, turnSignals.Color(0, 0, 255));
+  turnSignals.show();
+  delay(5000);
   
   
 } // /setup
@@ -75,16 +90,20 @@ void setup() {
 void loop() {
   
   readSensors();
+  saveReadings();
+
+  chooseDirection();
+  decideMode();
   
-  decide();
   
-  saveReadings(); 
 
   if (runMotors) {
-    moveDir(moveDirection);
+    //moveDir(moveDirection);
+    moveMotors(speedPWM, leftSpeedCoef, rightSpeedCoef);
   }
   else {
-    stopMotors();
+    //stopMotors();
+    moveMotors(0, 0, 0);
   }
   
   
@@ -129,15 +148,22 @@ void loop() {
     }  
     else if(mode == ALLBLACK) {
       DP("ALLBLACK");
-    }  
+    }
+
+    DP(" L:");
+    DP(noOfLines);
+
+    DP(" D:");
+    DP(moveDirection);
     
     DPL(" ");
     debugCounter = 0;
     
   }
   debugCounter++;
-  
-  delay(readingInterval);
+
+  delay(100);
+  //delay(readingInterval);
   
 } // /loop
 
