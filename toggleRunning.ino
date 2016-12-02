@@ -7,7 +7,7 @@
 void toggleRunning() {
   interruptTime = millis();
   if (interruptTime - lastInterruptTime > 200) {
-    runMotors = !runMotors;
+    haltMotors = !haltMotors;
     mode = NORMAL;
     lastMode = NORMAL;
   }

@@ -86,45 +86,38 @@ void loop() {
 
   /*Behaviours in different modes.*/
   switch (mode) {
+    case NORMAL:
+      moveMotors(lineDirection);
+      break;
       
     case GAP:
-      /* Straight, full speed. */
-      leftSpeedCoef = 1;
-      rightSpeedCoef = 1;
-      maxPWM = fullSpeedPWM;
+      moveMotors(STRAIGHT);
       break;
       
     case ALLBLACK:
-      /* Straight, full speed. */
-      leftSpeedCoef = 1;
-      rightSpeedCoef = 1;
-      maxPWM = fullSpeedPWM;
+      moveMotors(STRAIGHT);
       break;
       
     case FLYING:
-      /* Straight, slow down */
-      leftSpeedCoef = 1;
-      rightSpeedCoef = 1;
-      maxPWM = slowSpeedPWM;
+      moveMotors(SLOWSTRAIGHT);
       break;
       
     case PRELOOPCROSSING:
       /* Decide from line sensor readings, full speed. 
       Hoping this is not erroneus reading and the two lines will gather into one soon. */
-      moveDirectionForLine();
-      maxPWM = fullSpeedPWM;
+      moveMotors(lineDirection);
       break;
       
     case LOOPCROSSING:
-      /* Decide from line sensor readings, full speed. */
-      moveDirectionForLine();
-      maxPWM = fullSpeedPWM;
+      moveMotors(lineDirection);
       break;
       
     case AFTERLOOPCROSSING:
       /*Follow the line on the side that previously saw new line coming in. Full speed.*/
-      moveDirectionForOneLine(loopDirection);
-      maxPWM = fullSpeedPWM;
+      /*TODO: this somehow does not compile
+       * byte selectedLineDirection = moveDirectionForOneLine(loopDirection);
+      moveMotors(selectedLineDirection);*/
+      break;
 
     case OBSTACLE:
       /*Passing by obstacle is a simple time based maneuver that does not need sensor readings. Will just do these things in sequence.*/
@@ -145,25 +138,12 @@ void loop() {
       delay(500);
       mode = NORMAL;
       break;
-
-    default: //NORMAL
-      /* Decide from line sensor readings, full speed. */
-      moveDirectionForLine();
-      maxPWM = fullSpeedPWM;
-      
   }
 
 
   /* Show mode and line sensor readings status on a strip of RGB LEDs*/
   signalLightsShow();
   
-  /*Drive motors if allowed.*/
-  if (runMotors) {
-    moveMotors(maxPWM, leftSpeedCoef, rightSpeedCoef);
-  }
-  else {
-    moveMotors(0, 0, 0); //Stop.
-  }
 
 
   
@@ -214,10 +194,6 @@ void loop() {
       DP(" Lines:");
       DP(noOfLines);
   
-      DP(" L");
-      DP(leftSpeedCoef);
-      DP(" R");
-      DP(rightSpeedCoef);
 
       DP(" tp");
       DP(analogRead(towerPosPot));

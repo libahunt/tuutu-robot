@@ -8,9 +8,9 @@ float floorOKThres = 4; //over which to assume front of robot is up in the air
 
 int obstacleDistance = 20; //at which distance measurement to decide that this is obstacle, time to turn, cm
 
-int fullSpeedPWM = 120; //PWM speed for driving straight and for the outer wheel on turns
-int minPWM = 110; //Minimum PWM that is able to get the wheels moving. Used for mapping around the slower wheel speeds in turns.
+int fullSpeedPWM = 120; //PWM speed for driving straight and for the outer wheel on turns.
 int slowSpeedPWM = 120; //PWM for slowing down on mountain top (flying mode).
+int hardTurnRvPWM = 120; //PWM speed for the wheel that moves backwards on hard turns.
 
 
 /**

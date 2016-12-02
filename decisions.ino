@@ -138,31 +138,45 @@ int decideMode() {
 
 /**
  * Calculating move direction from detected lines.
- *
- * Saves into gloabal variables: leftSpeedCoef, rightSpeedCoef.
+ * 
+ * In some modes this decision will be overridden.
  */
 
 void moveDirectionForLine() {
-  
-  int hasLineSum=0;
-  for (i=0; i<9;i++) {
-    hasLineSum += hasLine[i];
-  }
 
-  float leftWeight = (hasLine[0]*8 + hasLine[1]*4 + hasLine[2]*2 + hasLine[3]*1) * noOfLines / hasLineSum;
-  float rightWeight = (hasLine[8]*8 + hasLine[7]*4 + hasLine[6]*2 + hasLine[5]*1) * noOfLines / hasLineSum;
-  float hasLineDiff = abs(leftWeight - rightWeight);
+  int leftFifth = int(hasLine[0]) + int(hasLine[1]);
+  int leftCenterFifth = int(hasLine[2]) + int(hasLine[3]);
+  int centerFifth = int(hasLine[4]);
+  int rightCenterFifth = int(hasLine[5]) + int(hasLine[6]);
+  int rightFifth = int(hasLine[7]) + int(hasLine[8]);
 
-  if (leftWeight > rightWeight) {
-    leftSpeedCoef = -1 * (hasLineDiff - 4);
-    rightSpeedCoef = leftWeight;
+  if ((leftFifth + leftCenterFifth) > (rightFifth + rightCenterFifth)) {
+     if (leftFifth > leftCenterFifth) {
+      lineDirection = HARDLEFT;
+    }
+    else {
+      lineDirection = SMOOTHLEFT;
+    }
   }
-  else if (leftWeight < rightWeight) {
-    leftSpeedCoef = rightWeight;
-    rightSpeedCoef = -1 * (hasLineDiff - 4);
+  else if ((leftFifth + leftCenterFifth) == (rightFifth + rightCenterFifth)) {
+    if (leftFifth > rightFifth) {
+      lineDirection = SMOOTHLEFT;
+    }
+    else if (rightFifth > leftFifth) {
+      lineDirection = SMOOTHRIGHT;
+    }
+    else {
+      lineDirection = STRAIGHT;
+    }
   }
-  
-  
+  else if ((leftFifth + leftCenterFifth) < (rightFifth + rightCenterFifth)) {
+    if (rightFifth > rightCenterFifth) {
+      lineDirection = HARDRIGHT;
+    }
+    else {
+      lineDirection = SMOOTHRIGHT;
+    }
+  }
 }
 
 
@@ -228,17 +242,13 @@ byte findLoopDirection(int currentSaveCounter) {
 
 
 /**
- * Sets motor speed coefficents to follow one line out of two.
- * 
- * On loop crossings the robot has to follow the line on the side where it previously saw new line coming in.
+ * Chooses direction to follow one line out of two.
  */
-
-void moveDirectionForOneLine(byte chosenDirection) {
+byte moveDirectionForOneLine(byte chosenDirection) {
   if (chosenDirection == LEFT) {
     for (i=0; i>9; i++) {
       
     }
   }
-}
-  
+} 
 
