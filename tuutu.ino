@@ -84,6 +84,9 @@ void loop() {
   /*Derive mode from sensor readings.*/
   decideMode();
 
+  /*Get line direction*/
+  moveDirectionForLine();
+
   /*Behaviours in different modes.*/
   switch (mode) {
     case NORMAL:
