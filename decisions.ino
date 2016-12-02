@@ -145,13 +145,13 @@ int decideMode() {
 void moveDirectionForLine() {
 
   int leftFifth = int(hasLine[0]) + int(hasLine[1]);
-  int leftCenterFifth = int(hasLine[2]) + int(hasLine[3]);
-  int centerFifth = int(hasLine[4]);
-  int rightCenterFifth = int(hasLine[5]) + int(hasLine[6]);
+  int leftCenterFifth = int(hasLine[2]);
+  int centerFifth = int(hasLine[3]) + int(hasLine[4]) + int(hasLine[5]);
+  int rightCenterFifth = int(hasLine[6]);
   int rightFifth = int(hasLine[7]) + int(hasLine[8]);
 
   if ((leftFifth + leftCenterFifth) > (rightFifth + rightCenterFifth)) {
-     if (leftFifth > leftCenterFifth) {
+     if (leftFifth >= leftCenterFifth) {
       lineDirection = HARDLEFT;
     }
     else {
@@ -170,7 +170,7 @@ void moveDirectionForLine() {
     }
   }
   else if ((leftFifth + leftCenterFifth) < (rightFifth + rightCenterFifth)) {
-    if (rightFifth > rightCenterFifth) {
+    if (rightFifth >= rightCenterFifth) {
       lineDirection = HARDRIGHT;
     }
     else {
