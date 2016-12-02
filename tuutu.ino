@@ -10,15 +10,15 @@
 
 /**
  * TODO:
- * turning logic might need revision about too low PWM-s
+ * TEST: -turning logic might need revision about too low PWM-s
  * make afterloop follow the right line
  * make obstacle maneuver work
  * add tower movements functionality
  * 
  */
 
-#define DEBUG /*comment this line out in production then all DP Serial instructsions are ignored*/
-#include "DebugUtils.h"/*leave this in, otherwise you get errors*/
+#define DEBUG /*Comment this line out in production then all DP Serial instructions are ignored*/
+#include "DebugUtils.h"/*Leave this in, otherwise you get errors.*/
 
 #include <NewPing.h>
 #include <Adafruit_NeoPixel.h>
@@ -62,7 +62,6 @@ void setup() {
   #ifdef DEBUG
     Serial.begin(9600);
     Serial.println("Started");
-    //delay(3000);
   #endif
 
   /*Turn off previous state in RGB LEDs.*/
@@ -72,24 +71,24 @@ void setup() {
   mode = NORMAL;
   lastMode = NORMAL;
   
-} // /setup
+}
 
 
 
 void loop() {
 
-  /*Do mesurements and save them.*/
+  /*Take measurements and save them.*/
   readSensors();
   saveReadings();
 
-  /*Derive mode from sensor readings*/
+  /*Derive mode from sensor readings.*/
   decideMode();
 
   /*Behaviours in different modes.*/
   switch (mode) {
       
     case GAP:
-    /* Straight, full speed. */
+      /* Straight, full speed. */
       leftSpeedCoef = 1;
       rightSpeedCoef = 1;
       maxPWM = fullSpeedPWM;
@@ -123,9 +122,8 @@ void loop() {
       break;
       
     case AFTERLOOPCROSSING:
-      //TODO follow the line that is same side as previously saved loopDirection.
-      //temp:
-      moveDirectionForLine();
+      /*Follow the line on the side that previously saw new line coming in. Full speed.*/
+      moveDirectionForOneLine(loopDirection);
       maxPWM = fullSpeedPWM;
 
     case OBSTACLE:
@@ -152,7 +150,7 @@ void loop() {
       /* Decide from line sensor readings, full speed. */
       moveDirectionForLine();
       maxPWM = fullSpeedPWM;
-
+      
   }
 
 
@@ -161,11 +159,9 @@ void loop() {
   
   /*Drive motors if allowed.*/
   if (runMotors) {
-    //moveDir(moveDirection);
-    moveMotors(fullSpeedPWM, leftSpeedCoef, rightSpeedCoef);
+    moveMotors(maxPWM, leftSpeedCoef, rightSpeedCoef);
   }
   else {
-    //stopMotors();
     moveMotors(0, 0, 0); //Stop.
   }
 
@@ -220,13 +216,14 @@ void loop() {
   
       DP(" L");
       DP(leftSpeedCoef);
-      DP("R");
+      DP(" R");
       DP(rightSpeedCoef);
 
       DP(" tp");
       DP(analogRead(towerPosPot));
       
       DPL(" ");
+    
       debugCounter = 0;
       
     }
@@ -237,9 +234,5 @@ void loop() {
   /*Wait a little before measuring and driving again.*/
   delay(readingInterval);
   
-} // /loop
-
-
-
-
+}
     

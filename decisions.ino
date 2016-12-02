@@ -225,3 +225,20 @@ byte findLoopDirection(int currentSaveCounter) {
   }
 }
 
+
+
+/**
+ * Sets motor speed coefficents to follow one line out of two.
+ * 
+ * On loop crossings the robot has to follow the line on the side where it previously saw new line coming in.
+ */
+
+void moveDirectionForOneLine(byte chosenDirection) {
+  if (chosenDirection == LEFT) {
+    for (i=0; i>9; i++) {
+      
+    }
+  }
+}
+  
+
