@@ -8,7 +8,7 @@
  */
 
 
-//#define DEBUG /*Comment this line out in production then all DP Serial instructions are ignored.*/
+#define DEBUG /*Comment this line out in production then all DP Serial instructions are ignored.*/
 #include "DebugUtils.h"/*Leave this in, otherwise you get errors.*/
 
 #include <NewPing.h>
@@ -95,44 +95,43 @@ void loop() {
       break;
       
     case PRELOOPCROSSING:
-      /* Decide from line sensor readings, full speed. 
-      The two lines should gather into one soon.*/
-      moveMotors(getLineDirection());
+      /*At the beginning of this mode the additional line direction is detected.
+      Follow the other line (the old one).*/
+      moveMotors(moveDirectionForOneLine(!loopDirection));
       break;
       
     case LOOPCROSSING:
-      /*When entering this mode saved data is analyzed to detect which side the new line came in.*/
       moveMotors(getLineDirection());
       break;
       
     case AFTERLOOPCROSSING:
-      /*Follow the line on the side that previously saw new line coming in. Full speed.*/
+      /*Follow the line on the side that previously saw new line coming in.*/
       moveMotors(moveDirectionForOneLine(loopDirection));
       break;
 
     case OBSTACLE:
       /*Passing by obstacle is a simple time based maneuver. Will just do these things in sequence.*/
-      unsigned long currentTime = millis();
-      if (currentTime <= obstacleStart + obstaclePhase1) {
-        moveMotors(HARDLEFT);
-      }
-      else if (currentTime <= obstacleStart + obstaclePhase2) {
-        moveMotors(STRAIGHT);
-      }
-      else if (currentTime <= obstacleStart + obstaclePhase3) {
-        moveMotors(HARDRIGHT);
-      }
-      else if (currentTime <= obstacleStart + obstaclePhase4) {
-        moveMotors(STRAIGHT);
-      }
-      else if (currentTime <= obstacleStart + obstaclePhase5) {
-        moveMotors(HARDRIGHT);
-      }
-      /*Turned back towards the line, exit obstacle mode into gap mode.*/
-      else {
-        mode = GAP;
-      }
-      break;
+      
+      signalLightsShow();
+
+      moveMotors(HARDLEFT);
+      delay(obstaclePhase1);
+
+      moveMotors(STRAIGHT);
+      delay(obstaclePhase2);
+
+      moveMotors(HARDRIGHT);
+      delay(obstaclePhase3);
+
+      moveMotors(STRAIGHT);
+      delay(obstaclePhase4);
+
+      moveMotors(HARDRIGHT);
+      delay(obstaclePhase5);
+
+      mode = GAP;
+      moveMotors(STRAIGHT);
+
   }
 
 

@@ -13,7 +13,7 @@ void moveMotors(byte moveDirectionMode) {
       case HARDLEFT:
         analogWrite(motorLeftFw, 0);
         analogWrite(motorLeftRv, hardTurnRvPWM);
-        analogWrite(motorRightFw, slowSpeedPWM);
+        analogWrite(motorRightFw, hardTurnFwPWM);
         analogWrite(motorRightRv, 0);
         break;
         
@@ -39,7 +39,7 @@ void moveMotors(byte moveDirectionMode) {
         break;
         
       case HARDRIGHT:
-        analogWrite(motorLeftFw, slowSpeedPWM);
+        analogWrite(motorLeftFw, hardTurnFwPWM);
         analogWrite(motorLeftRv, 0);
         analogWrite(motorRightFw, 0);
         analogWrite(motorRightRv, hardTurnRvPWM);

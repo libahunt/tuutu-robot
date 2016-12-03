@@ -8,12 +8,10 @@
 /*One Ultrasonic distance sensor detects the block shaped obstacle on the track.*/
 #define TRIGGER_PIN_OBS  8
 #define ECHO_PIN_OBS     9
-#define MAX_DISTANCE_OBS 200
 
 /*Second Ultrasonic distance sensor detects when the front of robot hangs over an edge.*/
 #define TRIGGER_PIN_EDGE  12
 #define ECHO_PIN_EDGE     11
-#define MAX_DISTANCE_EDGE 100
 
 /*Drive motors H-bridge connections.*/
 const int motorLeftFw = 5;

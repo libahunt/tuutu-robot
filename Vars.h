@@ -21,7 +21,7 @@ byte mode;
 byte loopDirection;
 
 /**
- * Movements - turn direction and steepness are passed as byte.
+ * Movements - turn direction, turn steepness or going straight faster or slower are passed as byte.
  */
 #define HARDLEFT 1
 #define SMOOTHLEFT 2
@@ -44,13 +44,13 @@ int saveCounter = 0; //helper for re-using the history arrays.
 /**
  * Obstacle sensor and maneuver related.
  */
-int frontDist; //Sensor reading
+int frontDist; //sensor reading
 unsigned long obstacleStart;//for storing time when the maneuver started
 
 /**
  * Detecting hill top where line sensor can not be trusted.
  */
-int floorDist; //Sensor reading
+int floorDist; //sensor reading
 
 /**
  * Recovering for erroneus lineloop decisions with timeout.
