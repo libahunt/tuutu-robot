@@ -10,7 +10,6 @@
 
 /**
  * TODO:
- * make afterloop follow the right line
  * add tower movements functionality
  * 
  */
@@ -31,10 +30,9 @@ NewPing obstacleSonar(TRIGGER_PIN_OBS, ECHO_PIN_OBS, MAX_DISTANCE_OBS);
 /*Second Ultrasonic distance sensor detects when the front of robot hangs over an edge.*/
 NewPing edgeSonar(TRIGGER_PIN_EDGE, ECHO_PIN_EDGE, MAX_DISTANCE_EDGE);
 
-/*Neopixel RHB LED strip is used as visual feedback indicator for the states of the robot and line readings.*/
+/*Neopixel RGB LED strip is used as visual feedback indicator for the states of the robot and line readings.*/
 Adafruit_NeoPixel signalLights = Adafruit_NeoPixel(9, PIXELPIN, NEO_GRB + NEO_KHZ800);
 #include "SignalColors.h" //State color definitions
-
 
 
 
@@ -55,6 +53,7 @@ void setup() {
   //pinMode(towerMotorUp, INPUT);
   //pinMode(towerMotorDown, INPUT);
 
+  /*Button that halts motors but keeps sensors running.*/
   attachInterrupt(digitalPinToInterrupt(runToggleButton), toggleRunning, LOW);
   
   #ifdef DEBUG
@@ -118,9 +117,7 @@ void loop() {
       
     case AFTERLOOPCROSSING:
       /*Follow the line on the side that previously saw new line coming in. Full speed.*/
-      /*TODO: this somehow does not compile
-       * byte selectedLineDirection = moveDirectionForOneLine(loopDirection);
-      moveMotors(selectedLineDirection);*/
+      moveMotors(moveDirectionForOneLine(loopDirection));
       break;
 
     case OBSTACLE:
@@ -158,7 +155,7 @@ void loop() {
   #endif
 
 
-  /*Wait a little before measuring and driving again.*/
+  /*Wait a little before measuring and deciding again.*/
   delay(readingInterval);
   
 }

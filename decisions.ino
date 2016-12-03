@@ -238,10 +238,41 @@ byte findLoopDirection(int currentSaveCounter) {
  * Chooses direction to follow one line out of two.
  */
 byte moveDirectionForOneLine(byte chosenDirection) {
+  byte line;
   if (chosenDirection == LEFT) {
-    for (i=0; i>9; i++) {
-      
+    /*Find leftmost line.*/
+    for (i=0; i<9; i++) {
+      if (hasLine[i]) {
+        line = i;
+        break;
+      }
     }
+  }
+  else { //chosenDirection == RIGHT
+    /*Find rightmost line.*/
+    for (i=8; i>=0; i--) {
+      if (hasLine[i]) {
+        line = i;
+        break;
+      }
+    }
+  }
+
+  /*Return direction.*/
+  if (line<=1) {
+    return HARDLEFT;
+  }
+  else if (line==2) {
+    return SMOOTHLEFT;
+  }
+  else if (line>=3 && line<=5) {
+    return STRAIGHT;
+  }
+  else if (line==6) {
+    return SMOOTHRGHT;
+  }
+  else {
+    return HARDRIGHT;
   }
 } 
 
