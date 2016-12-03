@@ -9,7 +9,6 @@ void toggleRunning() {
   if (interruptTime - lastInterruptTime > 200) {
     haltMotors = !haltMotors;
     mode = NORMAL;
-    lastMode = NORMAL;
   }
   lastInterruptTime = interruptTime;
 }

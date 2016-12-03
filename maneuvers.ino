@@ -1,4 +1,9 @@
-
+/**
+ * Moving motors.
+ * 
+ * If the global variable haltMotors is set motors do not move.
+ * Direction and in case of straight also speed of movement is passed as parameter.
+ */
 void moveMotors(byte moveDirectionMode) {
   
   if (!haltMotors) {
@@ -63,7 +68,6 @@ void moveMotors(byte moveDirectionMode) {
     analogWrite(motorRightFw, 0);
     analogWrite(motorRightRv, 0);
   }
-  
   
 }
   

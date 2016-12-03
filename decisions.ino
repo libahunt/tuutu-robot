@@ -9,140 +9,131 @@ int decideMode() {
 
     if (floorDist > floorOKThres) {
       mode = FLYING;
-      lastMode = NORMAL;
     }
     
     else if (frontDist < obstacleDistance && frontDist > 0) {
       mode = OBSTACLE;
-      lastMode = NORMAL;
     }
 
     else if (noOfLines==0) {
       mode = GAP;
-      lastMode = NORMAL;
     }
+
+    /*If noOfLines==1 stays in NORMAL mode.*/
   
     else if (noOfLines==2) {
       mode = PRELOOPCROSSING;
-      lastMode = NORMAL;
       /* Save time to timeout if this is erroneus decision. */
       loopStartTime = millis();
     }
 
     else if (noOfLines>2) { // more than two lines detected, assume start and finish markings
       mode = ALLBLACK;
-      lastMode = NORMAL;
     }
 
-    /*if noOfLines==1
-      stays in NORMAL mode
-    */
-
   } //end of NORMAL mode decision options
+
 
   else if (mode == GAP) {
 
     if (floorDist > floorOKThres) {
       mode = FLYING;
-      lastMode = GAP;
     }
     
     else if (noOfLines > 0) {//line found, exit from gap mode
       mode = NORMAL;
-      lastMode = GAP;
     }
 
   }
 
-  else if (mode == PRELOOPCROSSING) {
-    
-    if (noOfLines == 1) { //two lines have gathered into one, assume loop knot
-      mode = LOOPCROSSING;
-      lastMode = PRELOOPCROSSING;
 
-      /* Analyze from which side the additional line appeared. */
+  else if (mode == PRELOOPCROSSING) {
+
+    /*Two lines have gathered into one, assume loop knot.*/
+    if (noOfLines == 1) { 
+      mode = LOOPCROSSING;
+
+      /*Analyze from which side the additional line appeared.*/
       loopDirection = findLoopDirection(saveCounter);
       
-      /* Save time to timeout if this is erroneus decision. */
+      /*Save time to timeout if this is erroneus decision.*/
       loopStartTime = millis();
     }
 
-    /* Timeout into normal mode. */
+    /*Timeout into normal mode.*/
     else if (millis() > loopStartTime + loopTimeout) {
       mode = NORMAL;
-      lastMode = PRELOOPCROSSING;
     }
 
   }
+
   
   else if (mode == LOOPCROSSING) {
-    
-    if (noOfLines == 2) { //two lines have separated assume got over knot part
-      mode = AFTERLOOPCROSSING;
-      lastMode = LOOPCROSSING;      
+
+    /*Two lines have separated assume got over knot part.*/
+    if (noOfLines == 2) { 
+      mode = AFTERLOOPCROSSING;    
     }
 
-    /* Timeout into normal mode. */
+    /*Timeout into normal mode.*/
     else if (millis() > loopStartTime + loopTimeout) {
       mode = NORMAL;
-      lastMode = LOOPCROSSING;
     }
     
   }
   
   else if (mode == AFTERLOOPCROSSING) {
-    
-    if (noOfLines == 1) { //Second line has left sight, back to normal mode.
+
+    /*Second line has left sight, back to normal mode.*/
+    if (noOfLines == 1) { 
       mode = NORMAL;
-      lastMode = AFTERLOOPCROSSING;
     }
 
-    else if (noOfLines == 0) { //Second line has left sight, back to normal mode.
+    /*Backup to exit the state in case something went wrong meanwhile.*/ 
+    else if (noOfLines == 0) { 
       mode = GAP;
-      lastMode = AFTERLOOPCROSSING;
     }
 
   }
+  
 
   else if (mode == FLYING) {
     
     if (floorDist <= floorOKThres) {
       mode = NORMAL;
-      lastMode = FLYING;
     }
     
   }
+  
 
   else if (mode == ALLBLACK) {
     
     if (floorDist > floorOKThres) {
       mode = FLYING;
-      lastMode = ALLBLACK;
     }
     
     else if (noOfLines == 1) {
       mode = NORMAL;
-      lastMode = ALLBLACK;
     }
     
     else if (noOfLines == 0); {
       mode = GAP;
-      lastMode = ALLBLACK;
     }
   }
 
-  /*Exiting from obstacle mode happens in main loop.*/
+  /*Exiting from obstacle mode into gap mode happens in main loop because it is simple time based action.*/
+  
 }
 
 
 
 /**
  * Calculating move direction from detected lines.
- * 
- * In some modes this decision will be overridden.
  */
 
-void moveDirectionForLine() {
+byte getLineDirection() {
+  
+  byte lineDirection;
 
   int leftFifth = int(hasLine[0]) + int(hasLine[1]);
   int leftCenterFifth = int(hasLine[2]);
@@ -177,6 +168,8 @@ void moveDirectionForLine() {
       lineDirection = SMOOTHRIGHT;
     }
   }
+  
+  return lineDirection;
 }
 
 
