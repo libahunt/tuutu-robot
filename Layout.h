@@ -24,11 +24,6 @@ const int motorRightRv = 2;
 /*Line sensors connections.*/
 const int sensorPins[] = {A7, A6, A5, A4, A3, A8, A0, A1, A2}; //left to right
 
-/*Tank tower is moved by DC motor (H-bridge) and position tracked with a potentiometer.*/
-const int towerPosPot = A11;
-const int towerMotorUp = 14;
-const int towerMotorDown = 15;
-
 /*Interrupt button to toggle if motors should run or not. Has to be interrupt-capable.*/
 const int runToggleButton = 18;
 

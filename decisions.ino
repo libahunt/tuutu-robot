@@ -269,7 +269,7 @@ byte moveDirectionForOneLine(byte chosenDirection) {
     return STRAIGHT;
   }
   else if (line==6) {
-    return SMOOTHRGHT;
+    return SMOOTHRIGHT;
   }
   else {
     return HARDRIGHT;

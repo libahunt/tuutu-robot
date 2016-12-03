@@ -41,10 +41,3 @@ const unsigned long obstaclePhase3 = 0.7 * obstacleTimeCoef + obstaclePhase1 + o
 const unsigned long obstaclePhase4 = 1.1 * obstacleTimeCoef + obstaclePhase1 + obstaclePhase2 + obstaclePhase3; //move parallel to line
 const unsigned long obstaclePhase5 = 0.7 * obstacleTimeCoef + obstaclePhase1 + obstaclePhase2 + obstaclePhase3 + obstaclePhase4; //turn back towards the line
 
-/**
- * Tank tower position related.
- */
-const int towerUpReading = 800; //potentimeter reading in the upper position
-const int towerDownReading = 100;  //potentimeter reading in the lower position
-const int towerMotorPWM = 150; //PWM suitable for moving tower motor
-

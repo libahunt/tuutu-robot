@@ -8,12 +8,6 @@
  */
 
 
-/**
- * TODO:
- * add tower movements functionality
- * 
- */
-
 //#define DEBUG /*Comment this line out in production then all DP Serial instructions are ignored.*/
 #include "DebugUtils.h"/*Leave this in, otherwise you get errors.*/
 
@@ -48,10 +42,6 @@ void setup() {
   for (i=0; i<9; i++) {
     pinMode(sensorPins[i], INPUT);
   }
-
-  //pinMode(towerPosPot, INPUT);
-  //pinMode(towerMotorUp, INPUT);
-  //pinMode(towerMotorDown, INPUT);
 
   /*Button that halts motors but keeps sensors running.*/
   attachInterrupt(digitalPinToInterrupt(runToggleButton), toggleRunning, LOW);

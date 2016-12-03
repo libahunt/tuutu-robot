@@ -50,10 +50,6 @@ void debugSerialPrints() {
 
     DP(" Lines:");
     DP(noOfLines);
-
-
-    DP(" tp");
-    DP(analogRead(towerPosPot));
     
     DPL(" ");
   
