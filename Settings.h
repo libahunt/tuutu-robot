@@ -8,9 +8,9 @@ const float floorOKThres = 4; //over which to assume front of robot is up in the
 
 const int obstacleDistance = 20; //at which distance measurement to decide that this is obstacle, time to turn, cm
 
-const int fullSpeedPWM = 120; //PWM speed for driving straight and for the outer wheel on turns.
-const int slowSpeedPWM = 120; //PWM for slowing down on mountain top (flying mode).
-const int hardTurnRvPWM = 120; //PWM speed for the wheel that moves backwards on hard turns.
+const int fullSpeedPWM = 160; //PWM speed for driving straight and for the outer wheel on turns.
+const int slowSpeedPWM = 130; //PWM for slowing down on mountain top (flying mode).
+const int hardTurnRvPWM = 255; //PWM speed for the wheel that moves backwards on hard turns.
 
 
 /**
