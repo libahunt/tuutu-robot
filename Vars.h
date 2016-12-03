@@ -12,7 +12,6 @@
 #define FLYING 6
 #define ALLBLACK 7
 byte mode;
-byte lastMode;
 
 /**
  * Loop direction is saved as byte.
@@ -22,11 +21,15 @@ byte lastMode;
 byte loopDirection;
 
 /**
- * For passing motor relative speeds around.
+ * Movements - turn direction and steepness are passed as byte.
  */
-float leftSpeedCoef;
-float rightSpeedCoef;
-int maxPWM;
+#define HARDLEFT 1
+#define SMOOTHLEFT 2
+#define STRAIGHT 3
+#define SMOOTHRIGHT 4
+#define HARDRIGHT 5
+#define SLOWSTRAIGHT 6
+#define STOP 7
 
 /**
  * Line sensors related.
@@ -42,7 +45,7 @@ int saveCounter = 0; //helper for re-using the history arrays.
  * Obstacle sensor and maneuver related.
  */
 int frontDist; //Sensor reading
-unsigned long obstacleStart;//for storing time
+unsigned long obstacleStart;//for storing time when the maneuver started
 
 /**
  * Detecting hill top where line sensor can not be trusted.
@@ -57,9 +60,9 @@ unsigned long loopStartTime;
 /**
  * A button changes between drive or stall mode.
  */
-boolean runMotors = false; //current state
-unsigned long interruptTime; /*For debouncing drive/stall mode button.*/
-unsigned long lastInterruptTime = 0; /*For debouncing drive/stall mode button.*/
+boolean haltMotors = true; //current state
+unsigned long interruptTime; //for debouncing drive/stall mode button
+unsigned long lastInterruptTime = 0; //for debouncing drive/stall mode button
 
 /**
  * Other.

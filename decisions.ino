@@ -9,160 +9,167 @@ int decideMode() {
 
     if (floorDist > floorOKThres) {
       mode = FLYING;
-      lastMode = NORMAL;
     }
     
     else if (frontDist < obstacleDistance && frontDist > 0) {
       mode = OBSTACLE;
-      lastMode = NORMAL;
     }
 
     else if (noOfLines==0) {
       mode = GAP;
-      lastMode = NORMAL;
     }
+
+    /*If noOfLines==1 stays in NORMAL mode.*/
   
     else if (noOfLines==2) {
       mode = PRELOOPCROSSING;
-      lastMode = NORMAL;
       /* Save time to timeout if this is erroneus decision. */
       loopStartTime = millis();
     }
 
     else if (noOfLines>2) { // more than two lines detected, assume start and finish markings
       mode = ALLBLACK;
-      lastMode = NORMAL;
     }
 
-    /*if noOfLines==1
-      stays in NORMAL mode
-    */
-
   } //end of NORMAL mode decision options
+
 
   else if (mode == GAP) {
 
     if (floorDist > floorOKThres) {
       mode = FLYING;
-      lastMode = GAP;
     }
     
     else if (noOfLines > 0) {//line found, exit from gap mode
       mode = NORMAL;
-      lastMode = GAP;
     }
 
   }
 
-  else if (mode == PRELOOPCROSSING) {
-    
-    if (noOfLines == 1) { //two lines have gathered into one, assume loop knot
-      mode = LOOPCROSSING;
-      lastMode = PRELOOPCROSSING;
 
-      /* Analyze from which side the additional line appeared. */
+  else if (mode == PRELOOPCROSSING) {
+
+    /*Two lines have gathered into one, assume loop knot.*/
+    if (noOfLines == 1) { 
+      mode = LOOPCROSSING;
+
+      /*Analyze from which side the additional line appeared.*/
       loopDirection = findLoopDirection(saveCounter);
       
-      /* Save time to timeout if this is erroneus decision. */
+      /*Save time to timeout if this is erroneus decision.*/
       loopStartTime = millis();
     }
 
-    /* Timeout into normal mode. */
+    /*Timeout into normal mode.*/
     else if (millis() > loopStartTime + loopTimeout) {
       mode = NORMAL;
-      lastMode = PRELOOPCROSSING;
     }
 
   }
+
   
   else if (mode == LOOPCROSSING) {
-    
-    if (noOfLines == 2) { //two lines have separated assume got over knot part
-      mode = AFTERLOOPCROSSING;
-      lastMode = LOOPCROSSING;      
+
+    /*Two lines have separated assume got over knot part.*/
+    if (noOfLines == 2) { 
+      mode = AFTERLOOPCROSSING;    
     }
 
-    /* Timeout into normal mode. */
+    /*Timeout into normal mode.*/
     else if (millis() > loopStartTime + loopTimeout) {
       mode = NORMAL;
-      lastMode = LOOPCROSSING;
     }
     
   }
   
   else if (mode == AFTERLOOPCROSSING) {
-    
-    if (noOfLines == 1) { //Second line has left sight, back to normal mode.
+
+    /*Second line has left sight, back to normal mode.*/
+    if (noOfLines == 1) { 
       mode = NORMAL;
-      lastMode = AFTERLOOPCROSSING;
     }
 
-    else if (noOfLines == 0) { //Second line has left sight, back to normal mode.
+    /*Backup to exit the state in case something went wrong meanwhile.*/ 
+    else if (noOfLines == 0) { 
       mode = GAP;
-      lastMode = AFTERLOOPCROSSING;
     }
 
   }
+  
 
   else if (mode == FLYING) {
     
     if (floorDist <= floorOKThres) {
       mode = NORMAL;
-      lastMode = FLYING;
     }
     
   }
+  
 
   else if (mode == ALLBLACK) {
     
     if (floorDist > floorOKThres) {
       mode = FLYING;
-      lastMode = ALLBLACK;
     }
     
     else if (noOfLines == 1) {
       mode = NORMAL;
-      lastMode = ALLBLACK;
     }
     
     else if (noOfLines == 0); {
       mode = GAP;
-      lastMode = ALLBLACK;
     }
   }
 
-  /*Exiting from obstacle mode happens in main loop.*/
+  /*Exiting from obstacle mode into gap mode happens in main loop because it is simple time based action.*/
+  
 }
 
 
 
 /**
  * Calculating move direction from detected lines.
- *
- * Saves into gloabal variables: leftSpeedCoef, rightSpeedCoef.
  */
 
-void moveDirectionForLine() {
+byte getLineDirection() {
   
-  int hasLineSum=0;
-  for (i=0; i<9;i++) {
-    hasLineSum += hasLine[i];
-  }
+  byte lineDirection;
 
-  float leftWeight = (hasLine[0]*8 + hasLine[1]*4 + hasLine[2]*2 + hasLine[3]*1) * noOfLines / hasLineSum;
-  float rightWeight = (hasLine[8]*8 + hasLine[7]*4 + hasLine[6]*2 + hasLine[5]*1) * noOfLines / hasLineSum;
-  float hasLineDiff = abs(leftWeight - rightWeight);
+  int leftFifth = int(hasLine[0]) + int(hasLine[1]);
+  int leftCenterFifth = int(hasLine[2]);
+  int centerFifth = int(hasLine[3]) + int(hasLine[4]) + int(hasLine[5]);
+  int rightCenterFifth = int(hasLine[6]);
+  int rightFifth = int(hasLine[7]) + int(hasLine[8]);
 
-  if (leftWeight > rightWeight) {
-    leftSpeedCoef = -1 * (hasLineDiff - 4);
-    rightSpeedCoef = leftWeight;
+  if ((leftFifth + leftCenterFifth) > (rightFifth + rightCenterFifth)) {
+     if (leftFifth >= leftCenterFifth) {
+      lineDirection = HARDLEFT;
+    }
+    else {
+      lineDirection = SMOOTHLEFT;
+    }
   }
-  else if (leftWeight < rightWeight) {
-    leftSpeedCoef = rightWeight;
-    rightSpeedCoef = -1 * (hasLineDiff - 4);
+  else if ((leftFifth + leftCenterFifth) == (rightFifth + rightCenterFifth)) {
+    if (leftFifth > rightFifth) {
+      lineDirection = SMOOTHLEFT;
+    }
+    else if (rightFifth > leftFifth) {
+      lineDirection = SMOOTHRIGHT;
+    }
+    else {
+      lineDirection = STRAIGHT;
+    }
+  }
+  else if ((leftFifth + leftCenterFifth) < (rightFifth + rightCenterFifth)) {
+    if (rightFifth >= rightCenterFifth) {
+      lineDirection = HARDRIGHT;
+    }
+    else {
+      lineDirection = SMOOTHRIGHT;
+    }
   }
   
-  
+  return lineDirection;
 }
 
 
@@ -228,17 +235,44 @@ byte findLoopDirection(int currentSaveCounter) {
 
 
 /**
- * Sets motor speed coefficents to follow one line out of two.
- * 
- * On loop crossings the robot has to follow the line on the side where it previously saw new line coming in.
+ * Chooses direction to follow one line out of two.
  */
-
-void moveDirectionForOneLine(byte chosenDirection) {
+byte moveDirectionForOneLine(byte chosenDirection) {
+  byte line;
   if (chosenDirection == LEFT) {
-    for (i=0; i>9; i++) {
-      
+    /*Find leftmost line.*/
+    for (i=0; i<9; i++) {
+      if (hasLine[i]) {
+        line = i;
+        break;
+      }
     }
   }
-}
-  
+  else { //chosenDirection == RIGHT
+    /*Find rightmost line.*/
+    for (i=8; i>=0; i--) {
+      if (hasLine[i]) {
+        line = i;
+        break;
+      }
+    }
+  }
+
+  /*Return direction.*/
+  if (line<=1) {
+    return HARDLEFT;
+  }
+  else if (line==2) {
+    return SMOOTHLEFT;
+  }
+  else if (line>=3 && line<=5) {
+    return STRAIGHT;
+  }
+  else if (line==6) {
+    return SMOOTHRGHT;
+  }
+  else {
+    return HARDRIGHT;
+  }
+} 
 
