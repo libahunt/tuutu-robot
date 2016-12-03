@@ -118,9 +118,7 @@ void loop() {
       
     case AFTERLOOPCROSSING:
       /*Follow the line on the side that previously saw new line coming in. Full speed.*/
-      /*TODO: this somehow does not compile
-       * byte selectedLineDirection = moveDirectionForOneLine(loopDirection);
-      moveMotors(selectedLineDirection);*/
+      moveMotors(moveDirectionForOneLine(loopDirection));
       break;
 
     case OBSTACLE:
@@ -158,7 +156,7 @@ void loop() {
   #endif
 
 
-  /*Wait a little before measuring and driving again.*/
+  /*Wait a little before measuring and deciding again.*/
   delay(readingInterval);
   
 }
