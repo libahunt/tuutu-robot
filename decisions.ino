@@ -15,13 +15,25 @@ int decideMode() {
       mode = OBSTACLE;
     }
 
-    else if (noOfLines==0) {
+    else if (lineWidth > 3 && noOfLines == 1) {
+      mode = TURN90;
+      byte dir = getLineDirection();
+      if (dir == HARDLEFT || dir == SMOOTHLEFT) {
+        turn90Direction = SPINLEFT;
+      }
+      else {
+        turn90Direction = SPINRIGHT;
+      }
+      turn90StartTime = millis();
+    }
+
+    else if (noOfLines == 0) {
       mode = GAP;
     }
 
     /*If noOfLines==1 stays in NORMAL mode.*/
   
-    else if (noOfLines==2) {
+    else if (noOfLines == 2) {
       mode = PRELOOPCROSSING;
       /* Save time to timeout if this is erroneus decision. */
       loopStartTime = millis();
@@ -29,7 +41,7 @@ int decideMode() {
       loopDirection = findLoopDirection();
     }
 
-    else if (noOfLines>2) { // more than two lines detected, assume start and finish markings
+    else if (noOfLines > 2) { // more than two lines detected, assume start and finish markings
       mode = ALLBLACK;
     }
 
@@ -118,6 +130,17 @@ int decideMode() {
     else if (noOfLines == 0); {
       mode = GAP;
     }
+  }
+
+  else if (mode == TURN90) {
+
+    if (millis() > turn90StartTime + turn90Duration) {
+      if (noOfLines > 0) {
+        mode = NORMAL;
+      }
+    }
+    
+    
   }
 
   /*Exiting from obstacle mode into gap mode happens in main loop because it is simple time based action.*/

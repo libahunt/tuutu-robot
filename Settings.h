@@ -22,7 +22,7 @@ const int hardTurnFwPWM = 130; //PWM speed for the wheel that moves forard on ha
 const int readingInterval = 9-9; //after which time to read line sensors, in milliseconds, minus 9 because 1ms delay is between analogReads
 
 /**
- * Lenght of history arrays should cover about 10cm on previous track.
+ * Length of history arrays should cover about 10cm on previous track.
  * We attempted for 5 readings per cm, so 10cm history is 50 readings long.
  */
 const int saveSize = 50; //length of stored history, number of readings
@@ -42,6 +42,10 @@ const unsigned long obstaclePhase3 = 0.7 * obstacleTimeCoef; //turn parallel to 
 const unsigned long obstaclePhase4 = 1.1 * obstacleTimeCoef; //move parallel to line
 const unsigned long obstaclePhase5 = 0.8 * obstacleTimeCoef; //turn back towards the line
 
+/**
+ * It's possible tha robot runs off the line at 90 degree turn. Tis duration should turn it slightly over 90 degrees.
+ */
+const unsigned long turn90Duration = 960;
 
 /**
  * Ultrasonic distance sensors max distance settings.

@@ -23,6 +23,13 @@ void moveMotors(byte moveDirectionMode) {
         analogWrite(motorRightFw, fullSpeedPWM);
         analogWrite(motorRightRv, 0);
         break;
+
+      case SPINLEFT :
+        analogWrite(motorLeftFw, 0);
+        analogWrite(motorLeftRv, slowSpeedPWM);
+        analogWrite(motorRightFw, slowSpeedPWM);
+        analogWrite(motorRightRv, 0);
+        break;
         
       case STRAIGHT:
         analogWrite(motorLeftFw, fullSpeedPWM);
@@ -44,6 +51,13 @@ void moveMotors(byte moveDirectionMode) {
         analogWrite(motorRightFw, 0);
         analogWrite(motorRightRv, hardTurnRvPWM);
         break;
+
+      case SPINRIGHT: 
+        analogWrite(motorLeftFw, slowSpeedPWM);
+        analogWrite(motorLeftRv, 0);
+        analogWrite(motorRightFw, 0);
+        analogWrite(motorRightRv, slowSpeedPWM);
+        break;
         
       case SLOWSTRAIGHT:
         analogWrite(motorLeftFw, slowSpeedPWM);
@@ -51,7 +65,7 @@ void moveMotors(byte moveDirectionMode) {
         analogWrite(motorRightFw, slowSpeedPWM);
         analogWrite(motorRightRv, 0);
         break;
-        
+
       default: //STOP
         analogWrite(motorLeftFw, 0);
         analogWrite(motorLeftRv, 0);

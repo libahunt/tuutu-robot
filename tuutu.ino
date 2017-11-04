@@ -132,6 +132,14 @@ void loop() {
       mode = GAP;
       moveMotors(STRAIGHT);
 
+      break;
+
+    case TURN90:
+      /*When 90 deg turn is detected the robot spins around itself for at least set amount of time to make most of the 90 deg turn 
+      and then continues that turn til it sees a line (in case it did first run off the line). */
+      moveMotors(turn90Direction); 
+      break;     
+
   }
 
 

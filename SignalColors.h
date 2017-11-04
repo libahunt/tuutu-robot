@@ -21,4 +21,6 @@ unsigned long colorFlying = signalLights.Color(255, 0, 0);        //red
 unsigned long colorFlyingDim = signalLights.Color(25, 0, 0);  
 unsigned long colorAllblack = signalLights.Color(85, 85, 85);     //white
 unsigned long colorAllblackDim = signalLights.Color(9, 9, 9); 
+unsigned long colorTurn90 = signalLights.Color(170, 85, 0);     //orange
+unsigned long colorTurn90Dim = signalLights.Color(17, 8, 0); 
 

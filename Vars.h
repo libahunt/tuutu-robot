@@ -11,6 +11,7 @@
 #define OBSTACLE 5
 #define FLYING 6
 #define ALLBLACK 7
+#define TURN90 8
 byte mode;
 
 /**
@@ -30,6 +31,8 @@ byte loopDirection;
 #define HARDRIGHT 5
 #define SLOWSTRAIGHT 6
 #define STOP 7
+#define SPINLEFT 8
+#define SPINRIGHT 9
 
 /**
  * Line sensors related.
@@ -39,7 +42,9 @@ boolean hasLine[9]; //left to right. If the sensor reads below or above the blac
 boolean hasLinePrev[saveSize][9];//history of line existence under each sensor on previous readings
 byte noOfLines; //to detect line loop we have to see two lines under sensor at once
 byte noOfLinesPrev[saveSize]; //history for it
+int lineWidth; //how many adjacent sensors showed black - to detect 90 deg turns
 int saveCounter = 0; //helper for re-using the history arrays.
+byte turn90Direction;
 
 /**
  * Obstacle sensor and maneuver related.
@@ -56,6 +61,11 @@ int floorDist; //sensor reading
  * Recovering for erroneus lineloop decisions with timeout.
  */
 unsigned long loopStartTime;
+
+/**
+ * To do a minimum turn at 90 deg corner before starting to search the line.
+ */
+unsigned long turn90StartTime;
 
 /**
  * A button changes between drive or stall mode.

@@ -31,6 +31,10 @@ void signalLightsShow() {
       color=colorFlying;
       colorDim=colorFlyingDim;
       break;
+    case TURN90:
+      color=colorTurn90;
+      colorDim=colorTurn90Dim;
+      break;
     default: // ALLBLACK
       color=colorAllblack;
       colorDim=colorAllblackDim;
